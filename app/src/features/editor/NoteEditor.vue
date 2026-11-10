@@ -17,7 +17,9 @@ import { toggleCheckedAt } from "./extensions/checklist";
 import { onlyFolds } from "./extensions/folding";
 import { pastedUrl } from "./extensions/linkCard";
 import type { NoteLinkQuery } from "./extensions/noteLink";
+import type { Stroke } from "./extensions/sketch";
 import NoteLinkPicker from "./NoteLinkPicker.vue";
+import SketchSheet from "./SketchSheet.vue";
 
 const props = defineProps<{ findTerms: string[] | null }>();
 const store = useStore();
@@ -30,6 +32,46 @@ let loadToken = 0;
 const linkQuery = shallowRef<NoteLinkQuery | null>(null);
 const picker = ref<InstanceType<typeof NoteLinkPicker> | null>(null);
 const shownId = ref<string | null>(null);
+
+/** The drawing open for drawing; `fresh` when it was just put in. */
+const sketch = shallowRef<{ pos: number; strokes: Stroke[]; height: number; fresh: boolean } | null>(null);
+
+function editSketch(pos: number, fresh = false) {
+  const e = editor.value;
+  const node = e?.state.doc.nodeAt(pos);
+  if (!e?.isEditable || node?.type.name !== "sketch") return;
+  sketch.value = { pos, strokes: node.attrs.strokes as Stroke[], height: node.attrs.height as number, fresh };
+}
+
+function removeSketch(pos: number) {
+  editor.value
+    ?.chain()
+    .focus()
+    .command(({ tr }) => {
+      const node = tr.doc.nodeAt(pos);
+      if (node?.type.name === "sketch") tr.delete(pos, pos + node.nodeSize);
+      return true;
+    })
+    .run();
+}
+
+/** Done: keeps the strokes; a drawing left empty goes, as on the Mac. */
+function sketchDone(strokes: Stroke[]) {
+  const open = sketch.value;
+  sketch.value = null;
+  const e = editor.value;
+  if (!open || !e) return;
+  if (!strokes.length) removeSketch(open.pos);
+  else if (strokes === open.strokes) e.chain().focus().setNodeSelection(open.pos).run();
+  else e.chain().focus().setSketch(open.pos, strokes).setNodeSelection(open.pos).run();
+}
+
+function sketchCancel() {
+  const open = sketch.value;
+  sketch.value = null;
+  if (open?.fresh) removeSketch(open.pos);
+  else if (open) editor.value?.chain().focus().setNodeSelection(open.pos).run();
+}
 
 // Folding a heading is saved with the note but is not an edit to it.
 let edited = false;
@@ -77,6 +119,7 @@ const editor = useEditor({
       onQuery: (query) => (linkQuery.value = query),
       onKey: (event) => picker.value?.onKey(event) ?? false,
     },
+    editSketch: (pos) => editSketch(pos),
   }),
   editorProps: {
     attributes: { class: "rn-doc", spellcheck: "true" },
@@ -110,6 +153,18 @@ const editor = useEditor({
     },
     handleDOMEvents: {
       contextmenu(view, event) {
+        const drawing = (event.target as HTMLElement).closest(".rn-sketch");
+        if (drawing && editor.value?.isEditable) {
+          event.preventDefault();
+          const pos = view.posAtDOM(drawing, 0);
+          view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, pos)));
+          openMenu(event, [
+            { label: "Edit Drawing", action: () => editSketch(pos) },
+            { separator: true },
+            { label: "Delete Drawing", danger: true, action: () => removeSketch(pos) },
+          ]);
+          return true;
+        }
         const card = (event.target as HTMLElement).closest(".rn-link-card");
         if (card && editor.value) {
           event.preventDefault();
@@ -192,6 +247,7 @@ async function load(id: string | null) {
 
 async function open(id: string | null) {
   const token = ++loadToken;
+  sketch.value = null;
   autosave.reset();
   edited = false;
   const e = editor.value;
@@ -257,6 +313,14 @@ watch(
     picker.click();
   },
 );
+watch(
+  () => signals.newSketch,
+  () => {
+    const e = editor.value;
+    if (!e?.isEditable || !e.chain().focus().insertSketch().run()) return;
+    editSketch(e.state.selection.from, true);
+  },
+);
 watch(editor, (e) => (currentEditor.value = e ?? null), { immediate: true });
 
 store.beforeLeave = () => autosave.flush();
@@ -277,6 +341,13 @@ const date = computed(() => {
     <p class="date tabular">{{ date }}</p>
     <EditorContent :editor="editor" class="content" />
     <NoteLinkPicker ref="picker" :editor="editor ?? null" :query="linkQuery" :note-id="shownId" />
+    <SketchSheet
+      v-if="sketch"
+      :strokes="sketch.strokes"
+      :height="sketch.height"
+      @done="sketchDone"
+      @cancel="sketchCancel"
+    />
   </div>
 </template>
 

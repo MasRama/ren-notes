@@ -414,3 +414,52 @@
 .rn-doc .ProseMirror-gapcursor:after {
   border-top-color: var(--text);
 }
+
+/* Drawings: the same strokes in the note and while drawing. Ink is the text
+   colour, so a drawing reads in light and dark alike. */
+:root {
+  --sk-blue: #0a84ff;
+  --sk-green: #30c159;
+  --sk-yellow: #f2b900;
+  --sk-red: #ff453a;
+}
+.rn-ink path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rn-ink .ink {
+  stroke: var(--text);
+}
+.rn-ink .blue {
+  stroke: var(--sk-blue);
+}
+.rn-ink .green {
+  stroke: var(--sk-green);
+}
+.rn-ink .yellow {
+  stroke: var(--sk-yellow);
+}
+.rn-ink .red {
+  stroke: var(--sk-red);
+}
+.rn-ink .marker {
+  stroke-opacity: 0.45;
+}
+.rn-sketch {
+  margin: 6px 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.rn-sketch svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.rn-sketch.empty {
+  min-height: 120px;
+  background: var(--field);
+}
+.rn-sketch.ProseMirror-selectednode {
+  outline: 3px solid color-mix(in srgb, var(--accent) 60%, transparent);
+}

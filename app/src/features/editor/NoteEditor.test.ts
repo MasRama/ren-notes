@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { createApp, defineComponent, h, nextTick } from "vue";
-import { currentEditor, StoreKey } from "../../app/context";
+import { currentEditor, signals, StoreKey } from "../../app/context";
 import { Store } from "../../app/store";
 import { setApi } from "../../shared/ipc/api";
 import { MemoryApi } from "../../shared/ipc/memory";
@@ -124,5 +124,39 @@ describe("NoteEditor", () => {
       type: "noteLink",
       attrs: { id: other.id, title: "Trip budget" },
     });
+  });
+
+  it("draws a new drawing from the toolbar and saves its strokes", async () => {
+    const doc = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Map" }] }] };
+    const { stored, el } = await open(JSON.stringify(doc));
+    currentEditor.value!.commands.focus("end");
+    signals.newSketch++;
+    await wait(50);
+    const paper = document.querySelector<SVGSVGElement>(".sketch-sheet svg.paper")!;
+    const at = (type: string, x: number) =>
+      paper.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: 10, pointerId: 1, bubbles: true, button: 0 }));
+    at("pointerdown", 10);
+    at("pointermove", 60);
+    at("pointerup", 60);
+    document.querySelector<HTMLElement>(".sketch-sheet .done")!.click();
+    await wait(500);
+    expect(document.querySelector(".sketch-sheet")).toBeNull();
+    expect(el.querySelectorAll(".rn-sketch path")).toHaveLength(1);
+    expect(JSON.parse(stored.docJson).content[1]).toMatchObject({
+      type: "sketch",
+      attrs: { strokes: [{ tool: "pen", color: "ink" }] },
+    });
+  });
+
+  it("drops a new drawing that is cancelled before anything is drawn", async () => {
+    const doc = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Map" }] }] };
+    const { el } = await open(JSON.stringify(doc));
+    currentEditor.value!.commands.focus("end");
+    signals.newSketch++;
+    await wait(50);
+    document.querySelector<HTMLElement>(".sketch-sheet .cancel")!.click();
+    await wait(50);
+    expect(document.querySelector(".sketch-sheet")).toBeNull();
+    expect(el.querySelector(".rn-sketch")).toBeNull();
   });
 });

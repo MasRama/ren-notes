@@ -62,6 +62,9 @@ function table() {
         <button class="tool" title="Table (Ctrl+Alt+T)" :disabled="!canEdit" @mousedown.prevent @click="table">
           <Icon name="table" :size="19" />
         </button>
+        <button class="tool" title="Drawing" :disabled="!canEdit" @mousedown.prevent @click="signals.newSketch++">
+          <Icon name="sketch" :size="19" />
+        </button>
         <button class="tool" title="Attach a file" :disabled="!canEdit" @click="signals.attachFile++">
           <Icon name="attach" :size="19" />
         </button>

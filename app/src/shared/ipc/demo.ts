@@ -129,6 +129,19 @@ export function demoApi(params: URLSearchParams): MemoryApi {
     { type: "linkCard", attrs: cabin },
     h(2, "Pack"),
     tasks(["Rain jackets", true], ["Thermos and coffee", false], ["Power bank", false], ["Hiking shoes", false]),
+    {
+      type: "sketch",
+      attrs: {
+        height: 300,
+        strokes: [
+          { tool: "marker", color: "yellow", points: [90, 230, 300, 120, 470, 175, 640, 95, 880, 150] },
+          { tool: "pen", color: "ink", points: [90, 230, 180, 175, 300, 120, 390, 150, 470, 175, 560, 130, 640, 95, 760, 120, 880, 150] },
+          { tool: "pen", color: "red", points: [640, 70, 640, 95] },
+          { tool: "pen", color: "red", points: [640, 70, 668, 78, 640, 86] },
+          { tool: "pen", color: "blue", points: [80, 262, 140, 254, 200, 262, 260, 254, 320, 262] },
+        ],
+      },
+    },
     p("Costs are split four ways in ", { type: "noteLink", attrs: { id: budget, title: "Trip budget" } }, "."),
     p("Sunset from the ridge was the best part last time. #travel"),
     { type: "image", attrs: { attachmentId: photo, alt: "dusk.svg" } },

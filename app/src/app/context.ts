@@ -14,5 +14,6 @@ export function useStore(): Store {
 export const currentEditor = shallowRef<Editor | null>(null);
 
 /** Requests between panes that are not state: focus the search field, open
- * the file chooser, show find-in-note. Each is a counter to watch. */
-export const signals = reactive({ focusSearch: 0, attachFile: 0, findInNote: 0, focusList: 0 });
+ * the file chooser, show find-in-note, start a drawing. Each is a counter to
+ * watch. */
+export const signals = reactive({ focusSearch: 0, attachFile: 0, findInNote: 0, focusList: 0, newSketch: 0 });

@@ -12,6 +12,7 @@ import { HeadingFolding } from "./folding";
 import { LinkCard } from "./linkCard";
 import { MathResults } from "./math";
 import { NoteLink, type NoteLinkOptions } from "./noteLink";
+import { Sketch } from "./sketch";
 
 export type EditorOptions = NodeOptions &
   ShortcutOptions & {
@@ -21,6 +22,8 @@ export type EditorOptions = NodeOptions &
     openLink?: (url: string) => void;
     /** Links to other notes: their titles, opening them, the `>>` picker. */
     noteLinks?: Partial<NoteLinkOptions>;
+    /** Opens the drawing at `pos` for drawing. */
+    editSketch?: (pos: number) => void;
   };
 
 /** The editor's schema and behaviour. Used by the app and by tests. */
@@ -45,6 +48,7 @@ export function noteExtensions(options: EditorOptions): AnyExtension[] {
     HeadingFolding,
     MathResults,
     NoteLink.configure(options.noteLinks ?? {}),
+    Sketch.configure({ editSketch: options.editSketch ?? (() => {}) }),
     TagHighlight,
     SearchHighlight,
   ];
