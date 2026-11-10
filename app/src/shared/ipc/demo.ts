@@ -11,6 +11,7 @@ const p = (...parts: (string | JSONContent)[]): JSONContent => ({
 });
 const h = (level: number, text: string): JSONContent => ({ type: "heading", attrs: { level }, content: [{ type: "text", text }] });
 const b = (text: string): JSONContent => ({ type: "text", text, marks: [{ type: "bold" }] });
+const mark = (color: string, text: string): JSONContent => ({ type: "text", text, marks: [{ type: "highlight", attrs: { color } }] });
 const tasks = (...items: [string, boolean][]): JSONContent => ({
   type: "taskList",
   content: items.map(([text, checked]) => ({ type: "taskItem", attrs: { checked }, content: [p(text)] })),
@@ -88,7 +89,7 @@ export function demoApi(params: URLSearchParams): MemoryApi {
 
   add(DEFAULT_FOLDER_ID, 12 * 60 * 1000, [
     h(1, "Weekend in Lembang"),
-    p("Leave Saturday at six to beat the traffic. Book the cabin by Thursday."),
+    p("Leave Saturday at six to beat the traffic. ", mark("orange", "Book the cabin by Thursday.")),
     h(2, "Pack"),
     tasks(["Rain jackets", true], ["Thermos and coffee", false], ["Power bank", false], ["Hiking shoes", false]),
     p("Sunset from the ridge was the best part last time. #travel"),

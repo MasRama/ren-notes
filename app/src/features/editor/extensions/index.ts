@@ -7,6 +7,7 @@ import { NoteBulletList } from "./lists";
 import { NoteShortcuts, type ShortcutOptions } from "./shortcuts";
 import { SearchHighlight, TagHighlight } from "./highlight";
 import { SinkChecked } from "./checklist";
+import { NoteHighlight } from "./colors";
 
 export type EditorOptions = NodeOptions &
   ShortcutOptions & {
@@ -31,6 +32,7 @@ export function noteExtensions(options: EditorOptions): AnyExtension[] {
     AttachmentCard.configure({ attachmentUrl: options.attachmentUrl, openAttachment: options.openAttachment }),
     NoteShortcuts.configure({ toggleChecked: options.toggleChecked }),
     SinkChecked.configure({ enabled: options.sinkChecked ?? (() => true) }),
+    NoteHighlight,
     TagHighlight,
     SearchHighlight,
   ];

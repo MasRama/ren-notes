@@ -3,9 +3,10 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { currentEditor } from "../../app/context";
 import Icon from "../../shared/ui/Icon.vue";
 import type { TextStyle } from "./extensions/shortcuts";
+import { HIGHLIGHT_COLORS, type HighlightColor } from "./extensions/colors";
 
-/** The Aa button and its popover: text styles shown in their own look, and
- * bold/italic/underline/strikethrough. */
+/** The Aa button and its popover: text styles shown in their own look,
+ * bold/italic/underline/strikethrough, and the highlight colours. */
 defineProps<{ disabled: boolean }>();
 const open = ref(false);
 const root = ref<HTMLElement | null>(null);
@@ -44,6 +45,14 @@ const marks = [
 ];
 
 const chain = () => editor.value?.chain().focus();
+
+const colorName = (c: HighlightColor) => c[0].toUpperCase() + c.slice(1);
+const highlighted = (c: HighlightColor) => !!editor.value?.isActive("highlight", { color: c });
+
+/** A colour on the selection; the colour it already has takes it off. */
+function highlight(c: HighlightColor) {
+  apply(() => (highlighted(c) ? chain()?.unsetHighlight().run() : chain()?.setHighlight(c).run()));
+}
 
 function apply(run: () => unknown) {
   run();
@@ -95,6 +104,17 @@ onBeforeUnmount(() => {
           >
             {{ m.label }}
           </button>
+        </div>
+        <div class="colors">
+          <button
+            v-for="c in HIGHLIGHT_COLORS"
+            :key="c"
+            class="swatch"
+            :class="[c, { on: highlighted(c) }]"
+            :title="highlighted(c) ? 'Remove highlight' : `Highlight in ${colorName(c)}` + (c === 'purple' ? ' (Ctrl+Shift+E)' : '')"
+            :aria-pressed="highlighted(c)"
+            @click="highlight(c)"
+          />
         </div>
         <button v-for="st in styles" :key="st.id" class="style" :class="st.id" @click="setStyle(st.id)">
           <span class="tick">{{ st.active() ? "✓" : "" }}</span>
@@ -174,6 +194,41 @@ onBeforeUnmount(() => {
 }
 .marks .strike {
   text-decoration: line-through;
+}
+.colors {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 10px 6px;
+  padding: 2px 0 4px;
+}
+.swatch {
+  --hl: var(--hl-purple);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--hl);
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.18);
+  transition: transform 120ms var(--ease-out);
+}
+.swatch:hover {
+  transform: scale(1.1);
+}
+.swatch.on {
+  box-shadow:
+    0 0 0 2px var(--menu),
+    0 0 0 3.5px var(--hl);
+}
+.swatch.pink {
+  --hl: var(--hl-pink);
+}
+.swatch.orange {
+  --hl: var(--hl-orange);
+}
+.swatch.mint {
+  --hl: var(--hl-mint);
+}
+.swatch.blue {
+  --hl: var(--hl-blue);
 }
 .style {
   display: flex;

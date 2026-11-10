@@ -256,6 +256,28 @@
   color: var(--tag);
   font-weight: 550;
 }
+/* Highlights, as the Mac draws them: the text takes the colour, over a
+   tint of it. */
+.rn-doc mark {
+  --hl: var(--hl-purple);
+  color: var(--hl);
+  background: color-mix(in srgb, var(--hl) var(--hl-tint), transparent);
+  border-radius: 3px;
+  padding: 0 1px;
+  margin: 0 -1px;
+}
+.rn-doc mark[data-color="pink"] {
+  --hl: var(--hl-pink);
+}
+.rn-doc mark[data-color="orange"] {
+  --hl: var(--hl-orange);
+}
+.rn-doc mark[data-color="mint"] {
+  --hl: var(--hl-mint);
+}
+.rn-doc mark[data-color="blue"] {
+  --hl: var(--hl-blue);
+}
 .rn-match {
   background: var(--match);
   border-radius: 2px;

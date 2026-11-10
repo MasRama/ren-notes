@@ -31,6 +31,13 @@
   --control-line: rgba(0, 0, 0, 0.2);
   --control-edge: 0 0 0 0.5px rgba(0, 0, 0, 0.16), 0 0.5px 1.5px rgba(0, 0, 0, 0.14);
   --focus-ring: rgba(224, 170, 0, 0.45);
+  /* Highlight colours: text in the colour, on a tint of it. */
+  --hl-purple: #9b3fc6;
+  --hl-pink: #e0245e;
+  --hl-orange: #d26f00;
+  --hl-mint: #009c94;
+  --hl-blue: #0066d6;
+  --hl-tint: 17%;
   /* Menus, popovers and dialogs: a frosted material over what is behind. */
   --menu: rgba(242, 242, 242, 0.76);
   --menu-blur: blur(30px) saturate(1.9);
@@ -80,6 +87,12 @@
     --control-line: rgba(255, 255, 255, 0.14);
     --control-edge: inset 0 0.5px 0 rgba(255, 255, 255, 0.1), 0 0 0 0.5px rgba(0, 0, 0, 0.3), 0 0.5px 1.5px rgba(0, 0, 0, 0.3);
     --focus-ring: rgba(242, 194, 48, 0.45);
+    --hl-purple: #cf7cf6;
+    --hl-pink: #ff6b8d;
+    --hl-orange: #ffad3a;
+    --hl-mint: #66e3dd;
+    --hl-blue: #5aaaff;
+    --hl-tint: 24%;
     --menu: rgba(40, 40, 42, 0.74);
     --menu-line: rgba(255, 255, 255, 0.12);
     --shadow-pop:
@@ -119,6 +132,12 @@
   --control-line: rgba(255, 255, 255, 0.14);
   --control-edge: inset 0 0.5px 0 rgba(255, 255, 255, 0.1), 0 0 0 0.5px rgba(0, 0, 0, 0.3), 0 0.5px 1.5px rgba(0, 0, 0, 0.3);
   --focus-ring: rgba(242, 194, 48, 0.45);
+  --hl-purple: #cf7cf6;
+  --hl-pink: #ff6b8d;
+  --hl-orange: #ffad3a;
+  --hl-mint: #66e3dd;
+  --hl-blue: #5aaaff;
+  --hl-tint: 24%;
   --menu: rgba(40, 40, 42, 0.74);
   --menu-line: rgba(255, 255, 255, 0.12);
   --shadow-pop:
