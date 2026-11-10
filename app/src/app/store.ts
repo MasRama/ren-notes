@@ -42,6 +42,8 @@ export interface Session {
   /** The sidebar lets the desktop show through (blurred by the desktop,
    * when it blurs behind windows). */
   translucentSidebar: boolean;
+  /** Minutes without typing or clicking before locked notes close; 0 never. */
+  lockAfter: number;
   collapsed: string[];
 }
 
@@ -59,6 +61,7 @@ export const DEFAULT_SESSION: Session = {
   theme: "system",
   sinkChecked: true,
   translucentSidebar: false,
+  lockAfter: 15,
   collapsed: [],
 };
 
@@ -428,6 +431,11 @@ export class Store {
     return true;
   }
 
+  setLockAfter(minutes: number): void {
+    this.state.lockAfter = minutes;
+    this.persist();
+  }
+
   /** Opens locked notes; false when the password is wrong. */
   async openLocked(password: string): Promise<boolean> {
     try {
@@ -557,6 +565,7 @@ export class Store {
       theme: s.theme,
       sinkChecked: s.sinkChecked,
       translucentSidebar: s.translucentSidebar,
+      lockAfter: s.lockAfter,
       collapsed: s.collapsed,
     };
   }

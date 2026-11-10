@@ -296,6 +296,14 @@ describe("Store", () => {
       expect((await mem.notesGet(id)).docJson).toBe('{"secret":true}');
     });
 
+    it("keeps locked notes open 15 minutes by default and remembers a new time", async () => {
+      await store.init();
+      expect(store.state.lockAfter).toBe(15);
+      store.setLockAfter(60);
+      await store.persistNow();
+      expect(((await mem.sessionGet("ui")) as { lockAfter: number }).lockAfter).toBe(60);
+    });
+
     it("closing locked notes saves first and seals them again", async () => {
       const id = await noteWithTag();
       await store.init();

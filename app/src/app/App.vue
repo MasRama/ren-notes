@@ -10,6 +10,7 @@ import Icon from "../shared/ui/Icon.vue";
 import ContextMenu from "../shared/ui/ContextMenu.vue";
 import AlertDialog from "../shared/ui/AlertDialog.vue";
 import PasswordSheet from "../features/locks/PasswordSheet.vue";
+import { closeWhenIdle } from "../features/locks/autoLock";
 import Sidebar from "../features/sidebar/Sidebar.vue";
 import NoteList from "../features/note-list/NoteList.vue";
 import Gallery from "../features/note-list/Gallery.vue";
@@ -95,6 +96,7 @@ function refreshTint() {
 
 onMounted(async () => {
   window.addEventListener("keydown", onKey);
+  unlisten.push(closeWhenIdle(store, window));
   refreshTint();
   const win = await appWindow();
   if (!win) return;

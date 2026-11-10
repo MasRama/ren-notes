@@ -71,6 +71,14 @@ export function changePassword(store: Store): Promise<boolean> {
   });
 }
 
+/** How long locked notes may stay open with nothing typed or clicked. */
+export const LOCK_AFTER: { minutes: number; label: string }[] = [
+  { minutes: 5, label: "5 Minutes" },
+  { minutes: 15, label: "15 Minutes" },
+  { minutes: 60, label: "1 Hour" },
+  { minutes: 0, label: "Never" },
+];
+
 export async function lockNote(store: Store, note: NoteSummary): Promise<void> {
   if (await openLockedNotes(store)) await store.lockNote(note.id);
 }
@@ -90,6 +98,15 @@ export function lockMenu(store: Store, note: NoteSummary): MenuItem[] {
   if (!hasPassword) return items;
   items.push({ separator: true });
   if (open) items.push({ label: "Close All Locked Notes", action: () => void store.closeLocked() });
-  items.push({ label: "Change Password…", action: () => void changePassword(store) });
+  items.push(
+    { label: "Change Password…", action: () => void changePassword(store) },
+    { separator: true },
+    { label: "Close Locked Notes After", disabled: true },
+    ...LOCK_AFTER.map(({ minutes, label }) => ({
+      label,
+      checked: store.state.lockAfter === minutes,
+      action: () => store.setLockAfter(minutes),
+    })),
+  );
   return items;
 }

@@ -99,14 +99,26 @@ describe("changing the password", () => {
 
 describe("lockMenu", () => {
   const labels = () => lockMenu(store, note()).map((i) => ("label" in i ? i.label : "—"));
+  const after = ["—", "Close Locked Notes After", "5 Minutes", "15 Minutes", "1 Hour", "Never"];
 
   it("offers what fits the note and whether locked notes are open", async () => {
     expect(labels()).toEqual(["Lock Note"]);
     await store.setNotesPassword("hunter2", "");
-    expect(labels()).toEqual(["Lock Note", "—", "Close All Locked Notes", "Change Password…"]);
+    expect(labels()).toEqual(["Lock Note", "—", "Close All Locked Notes", "Change Password…", ...after]);
     await store.lockNote(id);
-    expect(labels()).toEqual(["Remove Lock", "—", "Close All Locked Notes", "Change Password…"]);
+    expect(labels()).toEqual(["Remove Lock", "—", "Close All Locked Notes", "Change Password…", ...after]);
     await store.closeLocked();
-    expect(labels()).toEqual(["Remove Lock", "—", "Change Password…"]);
+    expect(labels()).toEqual(["Remove Lock", "—", "Change Password…", ...after]);
+  });
+
+  it("ticks how long locked notes stay open, and changes it", async () => {
+    await store.setNotesPassword("hunter2", "");
+    const checked = () =>
+      lockMenu(store, note()).flatMap((i) => ("label" in i && i.checked ? [i.label] : []));
+    expect(checked()).toEqual(["15 Minutes"]);
+    const never = lockMenu(store, note()).find((i) => "label" in i && i.label === "Never");
+    if (never && "action" in never) never.action!();
+    expect(store.state.lockAfter).toBe(0);
+    expect(checked()).toEqual(["Never"]);
   });
 });
