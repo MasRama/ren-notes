@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 import { useStore } from "../../app/context";
-import { smartDialog } from "./dialog";
+import { copyRules, smartDialog } from "./dialog";
 
 /** New or edit smart folder: a name and the rules a note must meet. */
 const store = useStore();
@@ -46,7 +46,7 @@ function toggleTag(tag: string) {
 async function save() {
   if (!canSave.value) return;
   try {
-    await store.saveSmartFolder(smartDialog.id, smartDialog.name.trim(), structuredClone({ ...r.value }));
+    await store.saveSmartFolder(smartDialog.id, smartDialog.name.trim(), copyRules(r.value));
     smartDialog.open = false;
   } catch (e) {
     error.value = (e as { message?: string }).message ?? "Can’t save this smart folder.";

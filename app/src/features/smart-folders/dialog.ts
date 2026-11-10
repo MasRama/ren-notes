@@ -19,11 +19,17 @@ export const smartDialog = reactive({
   rules: { ...EMPTY_RULES } as Rules,
 });
 
+/** A plain copy of rules. structuredClone cannot copy Vue's reactive
+ * proxies, and rules hold only flat values and a list of tags. */
+export function copyRules(rules: Rules): Rules {
+  return { ...rules, tags: [...rules.tags] };
+}
+
 export function openSmartDialog(edit?: { id: string; name: string; rules: Rules }): void {
   Object.assign(smartDialog, {
     open: true,
     id: edit?.id ?? null,
     name: edit?.name ?? "",
-    rules: structuredClone(edit?.rules ?? EMPTY_RULES),
+    rules: copyRules(edit?.rules ?? EMPTY_RULES),
   });
 }
