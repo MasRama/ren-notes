@@ -4,9 +4,10 @@
 # your own session, settings or notes. The page runs on demo data. Stays in
 # the foreground; Ctrl-C stops it. Then use shot.sh and stop.sh.
 #
-# Usage: tools/devshell/run.sh [--dark] [--backdrop=light|dark]
+# Usage: tools/devshell/run.sh [--dark] [--backdrop=light|dark] [--wallpaper=FILE]
 #   --dark           the GNOME dark style (the app follows it)
 #   --backdrop=...   a plain light (default) or dark desktop behind the window
+#   --wallpaper=...  a picture instead, to see the sidebar take on its tint
 #
 # Needs: target/debug/renotes (cargo build -p renotes-app) and app/node_modules.
 set -eu
@@ -19,11 +20,13 @@ if [ -z "${RENOTES_DEVSHELL_INNER:-}" ]; then
     SCHEME=default
     GTK_THEME_NAME=Adwaita
     BACKDROP='#d9dde3'
+    WALLPAPER=''
     for arg in "$@"; do
         case "$arg" in
             --dark) SCHEME=prefer-dark GTK_THEME_NAME=Adwaita-dark ;;
             --backdrop=light) BACKDROP='#d9dde3' ;;
             --backdrop=dark) BACKDROP='#2b2f36' ;;
+            --wallpaper=*) WALLPAPER=$(realpath "${arg#--wallpaper=}") ;;
             *) echo "unknown option: $arg" >&2; exit 2 ;;
         esac
     done
@@ -35,6 +38,11 @@ if [ -z "${RENOTES_DEVSHELL_INNER:-}" ]; then
         "$STATE/cache" "$STATE/runtime" "$STATE/services" "$STATE/shots"
     chmod 700 "$STATE/runtime"
     cp -r "$HERE/devtools@renotes" "$STATE/data/gnome-shell/extensions/"
+    PICTURE='' OPTIONS='none'
+    if [ -n "$WALLPAPER" ]; then
+        cp "$WALLPAPER" "$STATE/wallpaper"
+        PICTURE="file://$STATE/wallpaper" OPTIONS='zoom'
+    fi
 
     cat > "$STATE/config/glib-2.0/settings/keyfile" <<KEYFILE
 [org/gnome/shell]
@@ -48,9 +56,9 @@ color-scheme='$SCHEME'
 gtk-theme='$GTK_THEME_NAME'
 
 [org/gnome/desktop/background]
-picture-uri=''
-picture-uri-dark=''
-picture-options='none'
+picture-uri='$PICTURE'
+picture-uri-dark='$PICTURE'
+picture-options='$OPTIONS'
 color-shading-type='solid'
 primary-color='$BACKDROP'
 KEYFILE
