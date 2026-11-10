@@ -169,6 +169,11 @@ onBeforeUnmount(() => {
 .window.framed {
   border-radius: 10px;
 }
+/* Behind other windows the selection goes grey, even in the focused pane. */
+.window.inactive :deep(.focused .row.selected) {
+  background: var(--select-2);
+  color: var(--text);
+}
 /* The light inner edge dark windows have on the Mac. Drawn over the panes,
    whose own backgrounds would cover an inset shadow. */
 .window.framed::after {
