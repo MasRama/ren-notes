@@ -157,14 +157,18 @@ input {
   width: 10px;
   height: 10px;
 }
+/* Hidden until the pointer is over the pane, like overlay scrollbars on the Mac. */
 ::-webkit-scrollbar-thumb {
-  background: var(--scroll);
+  background: transparent;
   border-radius: 10px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scroll);
 }
 
 .tabular {
