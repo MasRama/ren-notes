@@ -154,6 +154,14 @@ export function demoApi(params: URLSearchParams): MemoryApi {
     h(3, "Serves two"),
     bullets("2 cups cold rice", "4 shallots, 3 cloves garlic", "2 red chillies", "1 tsp terasi", "Sweet soy to finish"),
   ]);
+  add(folders.personal.id, 4 * DAY, [
+    h(1, "Trip budget"),
+    p("cabin = 850000"),
+    p("fuel = 2 * 180000"),
+    p("food = 4 * 3 * 45000"),
+    p("Total: cabin + fuel + food ="),
+    p("Each of us pays (cabin + fuel + food) / 4 ="),
+  ]);
   add(DEFAULT_FOLDER_ID, 18 * DAY, [h(1, "Wi-Fi at the studio"), p("Network: studio-5g. Ask Dina for the guest code.")]);
   add(folders.personal.id, 70 * DAY, [h(1, "Gift ideas"), p("A good fountain pen for Bapak. Plants for the balcony.")]);
   add(DEFAULT_FOLDER_ID, 400 * DAY, [h(1, "Old meeting notes"), p("Decided to move the office in March.")]);

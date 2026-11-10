@@ -394,6 +394,16 @@
   border-radius: 2px;
 }
 
+/* Math Notes: the answer follows the =, in the accent colour. It is drawn
+   after the = and is not part of the text. */
+.rn-math-result::after {
+  content: attr(data-result);
+  margin-left: 0.3em;
+  color: var(--accent-text);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
 .rn-doc .ProseMirror-gapcursor:after {
   border-top-color: var(--text);
 }

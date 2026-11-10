@@ -10,6 +10,7 @@ import { SinkChecked } from "./checklist";
 import { NoteHighlight } from "./colors";
 import { HeadingFolding } from "./folding";
 import { LinkCard } from "./linkCard";
+import { MathResults } from "./math";
 
 export type EditorOptions = NodeOptions &
   ShortcutOptions & {
@@ -39,6 +40,7 @@ export function noteExtensions(options: EditorOptions): AnyExtension[] {
     SinkChecked.configure({ enabled: options.sinkChecked ?? (() => true) }),
     NoteHighlight,
     HeadingFolding,
+    MathResults,
     TagHighlight,
     SearchHighlight,
   ];
