@@ -5,22 +5,32 @@ pub mod attachments;
 pub mod folders;
 pub mod library;
 pub mod links;
+pub mod locks;
 pub mod notes;
 
 use std::sync::{Mutex, MutexGuard};
 
 use renotes_core::app::Library;
+use renotes_core::features::locks::Key;
 use serde::Serialize;
 
 pub struct AppState {
     library: Mutex<Library>,
+    /// The key to locked notes while they are open. Only ever in memory: it
+    /// goes when they are closed or the app quits.
+    key: Mutex<Option<Key>>,
 }
 
 impl AppState {
     pub fn new(library: Library) -> AppState {
         AppState {
             library: Mutex::new(library),
+            key: Mutex::new(None),
         }
+    }
+
+    pub fn key(&self) -> MutexGuard<'_, Option<Key>> {
+        self.key.lock().unwrap_or_else(|e| e.into_inner())
     }
 
     /// The library; a panic in another command does not lock it for good.

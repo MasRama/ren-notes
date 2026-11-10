@@ -1,6 +1,9 @@
+use renotes_core::features::locks;
 use renotes_core::features::notes::{self, Note, NoteFilter, NoteSort, NoteSummary, SaveNote};
+use renotes_core::shared::error::Error;
 use tauri::State;
 
+use super::locks::CLOSED;
 use super::{AppState, CmdResult};
 
 #[tauri::command]
@@ -12,9 +15,19 @@ pub async fn notes_list(
     Ok(notes::list(state.lock().db(), &filter, sort)?)
 }
 
+/// A note; a locked one comes opened while locked notes are open, and with
+/// an empty document while they are closed.
 #[tauri::command]
 pub async fn notes_get(state: State<'_, AppState>, id: String) -> CmdResult<Note> {
-    Ok(notes::get(state.lock().db(), &id)?)
+    let library = state.lock();
+    let note = notes::get(library.db(), &id)?;
+    if !note.summary.locked {
+        return Ok(note);
+    }
+    match state.key().as_ref() {
+        Some(key) => Ok(locks::open(library.db(), key, &id)?),
+        None => Ok(note),
+    }
 }
 
 #[tauri::command]
@@ -28,7 +41,13 @@ pub async fn notes_save(
     id: String,
     input: SaveNote,
 ) -> CmdResult<NoteSummary> {
-    Ok(notes::save(state.lock().db_mut(), &id, input)?)
+    let mut library = state.lock();
+    if !locks::is_locked(library.db(), &id)? {
+        return Ok(notes::save(library.db_mut(), &id, input)?);
+    }
+    let key = state.key();
+    let key = key.as_ref().ok_or(Error::Forbidden(CLOSED))?;
+    Ok(locks::save(library.db_mut(), key, &id, input)?)
 }
 
 #[tauri::command]
