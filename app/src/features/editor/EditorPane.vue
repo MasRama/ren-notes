@@ -5,6 +5,7 @@ import Icon from "../../shared/ui/Icon.vue";
 import FormatMenu from "./FormatMenu.vue";
 import NoteEditor from "./NoteEditor.vue";
 import SearchField from "./SearchField.vue";
+import { vRubberBand } from "../../shared/ui/rubberBand";
 
 defineProps<{ chromePad: boolean }>();
 const store = useStore();
@@ -85,7 +86,7 @@ function table() {
       <button class="link" @click="closeFind">Done</button>
     </div>
 
-    <div class="scroll">
+    <div v-rubber-band class="scroll">
       <NoteEditor :find-terms="findTerms" />
     </div>
   </section>

@@ -9,6 +9,7 @@ import Highlighted from "./Highlighted.vue";
 import ListHeader from "./ListHeader.vue";
 import { deleteNote, emptyTrash, noteMenu } from "./actions";
 import { listGroups } from "./groups";
+import { vRubberBand } from "../../shared/ui/rubberBand";
 
 defineProps<{ chromePad: boolean }>();
 const store = useStore();
@@ -72,6 +73,7 @@ watch(
     </div>
     <div
       ref="scroller"
+      v-rubber-band
       class="scroll"
       tabindex="0"
       @keydown="onKey"

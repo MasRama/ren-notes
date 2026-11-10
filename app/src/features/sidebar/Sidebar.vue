@@ -9,6 +9,7 @@ import { FOLDER_TYPE, NOTE_TYPE, dropZone, type DropZone } from "../../shared/dn
 import { flattenFolders, subtree } from "./tree";
 import { openSmartDialog } from "../smart-folders/dialog";
 import type { Folder } from "../../shared/ipc/types";
+import { vRubberBand } from "../../shared/ui/rubberBand";
 
 const store = useStore();
 const s = store.state;
@@ -137,7 +138,7 @@ async function dropped(e: DragEvent, folder: Folder) {
 <template>
   <nav class="sidebar" :class="{ focused }" @contextmenu.prevent="newMenu" @pointerdown="s.focus = 'sidebar'">
     <div class="top" data-tauri-drag-region />
-    <div class="scroll">
+    <div v-rubber-band class="scroll">
       <button class="section" @click="sectionOpen = !sectionOpen">
         <span>On My Computer</span>
         <Icon class="disclose" :class="{ open: sectionOpen }" name="chevronRight" :size="12" />

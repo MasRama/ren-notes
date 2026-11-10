@@ -8,6 +8,7 @@ import Highlighted from "./Highlighted.vue";
 import ListHeader from "./ListHeader.vue";
 import { deleteNote, emptyTrash, noteMenu } from "./actions";
 import { listGroups } from "./groups";
+import { vRubberBand } from "../../shared/ui/rubberBand";
 
 defineProps<{ chromePad: boolean }>();
 const store = useStore();
@@ -52,7 +53,7 @@ function dragStart(e: DragEvent, note: NoteSummary) {
       Notes are kept here for 30 days, then deleted for good.
       <button class="link" @click="emptyTrash(store)">Delete All</button>
     </div>
-    <div class="scroll" tabindex="0" @keydown="onKey" @focus="s.focus = 'list'">
+    <div v-rubber-band class="scroll" tabindex="0" @keydown="onKey" @focus="s.focus = 'list'">
       <div v-for="g in groups" :key="g.label" class="group">
         <h2 v-if="g.label" class="group-label">{{ g.label }}</h2>
         <TransitionGroup tag="div" name="card" class="grid">
