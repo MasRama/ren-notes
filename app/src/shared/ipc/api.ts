@@ -53,6 +53,9 @@ export interface Api {
   sessionSet(key: string, value: unknown): Promise<void>;
 
   importOld(): Promise<ImportReport | null>;
+
+  /** The wallpaper's average colour (`#rrggbb`), or null when unknown. */
+  desktopTint(): Promise<string | null>;
 }
 
 let current: Api | null = null;

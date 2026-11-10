@@ -1,4 +1,5 @@
-//! Trash, search, tags, smart folders, session and the old app's import.
+//! Trash, search, tags, smart folders, session, the old app's import and
+//! the desktop's tint.
 
 use renotes_core::features::import::{default_old_db_path, import_old_renotes, ImportReport};
 use renotes_core::features::notes::{NoteSort, NoteSummary};
@@ -103,4 +104,10 @@ pub async fn import_old(state: State<'_, AppState>) -> CmdResult<Option<ImportRe
         return Ok(None);
     }
     Ok(import_old_renotes(state.lock().db_mut(), &path)?)
+}
+
+/// The wallpaper's average colour, or `None` when it cannot be read.
+#[tauri::command]
+pub async fn desktop_tint() -> Option<String> {
+    crate::wallpaper::tint()
 }

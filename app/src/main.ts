@@ -18,6 +18,11 @@ async function boot() {
   } else {
     const { demoApi } = await import("./shared/ipc/demo");
     api = demoApi(new URLSearchParams(location.search));
+    if (isTauri()) {
+      // Demo notes, but the real desktop's tint.
+      const { tauriApi } = await import("./shared/ipc/tauri");
+      api.desktopTint = tauriApi().desktopTint;
+    }
   }
   setApi(api);
   const store = new Store(api);

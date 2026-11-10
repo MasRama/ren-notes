@@ -48,6 +48,7 @@ export function demoApi(params: URLSearchParams): MemoryApi {
     view: params.get("view") ?? "list",
     sidebarShown: params.get("sidebar") !== "0",
   });
+  api.tint = params.get("tint");
   if (params.get("empty")) return api;
 
   const folders = {

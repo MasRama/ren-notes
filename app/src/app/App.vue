@@ -2,6 +2,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from "vue";
 import { currentEditor, signals, useStore } from "./context";
 import { appWindow } from "./window";
+import { applyTint } from "./tint";
+import { api } from "../shared/ipc/api";
 import WindowControls from "./WindowControls.vue";
 import Splitter from "./Splitter.vue";
 import Icon from "../shared/ui/Icon.vue";
@@ -82,15 +84,27 @@ async function onKey(e: KeyboardEvent) {
 
 let unlisten: Array<() => void> = [];
 
+// The wallpaper may have changed while the window was in the background.
+function refreshTint() {
+  api()
+    .desktopTint()
+    .then((hex) => applyTint(document.documentElement, hex))
+    .catch(() => applyTint(document.documentElement, null));
+}
+
 onMounted(async () => {
   window.addEventListener("keydown", onKey);
+  refreshTint();
   const win = await appWindow();
   if (!win) return;
   maximized.value = await win.isMaximized();
   const { listen } = await import("@tauri-apps/api/event");
   unlisten.push(
     // From the frame (frame.rs), so the page dims exactly when its shadow does.
-    await listen<boolean>("renotes:active", ({ payload }) => (windowActive.value = payload)),
+    await listen<boolean>("renotes:active", ({ payload }) => {
+      windowActive.value = payload;
+      if (payload) refreshTint();
+    }),
     await win.onResized(async () => (maximized.value = await win.isMaximized())),
     await win.onCloseRequested(async () => {
       await store.beforeLeave?.();
@@ -168,6 +182,9 @@ onBeforeUnmount(() => {
 }
 .window.framed {
   border-radius: 10px;
+}
+.window.inactive :deep(.sidebar) {
+  background: var(--sidebar-flat);
 }
 /* Behind other windows the selection goes grey, even in the focused pane. */
 .window.inactive :deep(.focused .row.selected) {

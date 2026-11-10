@@ -3,7 +3,10 @@
 :root {
   color-scheme: light;
   --window: #ffffff;
-  --sidebar: #eeedeb;
+  /* The sidebar takes a little of the wallpaper's hue (tint.ts) while the
+     window is active, and goes flat behind other windows, as on the Mac. */
+  --sidebar: hsl(var(--tint-h, 40) min(calc(var(--tint-s, 18%) * 0.4), 20%) 92.5%);
+  --sidebar-flat: #f1f1f0;
   --sidebar-line: rgba(0, 0, 0, 0.07);
   --list: #ffffff;
   --editor: #ffffff;
@@ -43,7 +46,8 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --window: #1e1e1e;
-    --sidebar: #2a2a2b;
+    --sidebar: hsl(var(--tint-h, 240) min(calc(var(--tint-s, 5%) * 0.2), 9%) 16.8%);
+    --sidebar-flat: #262627;
     --sidebar-line: rgba(255, 255, 255, 0.06);
     --list: #1e1e1e;
     --editor: #1e1e1e;
@@ -75,7 +79,8 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --window: #1e1e1e;
-  --sidebar: #2a2a2b;
+  --sidebar: hsl(var(--tint-h, 240) min(calc(var(--tint-s, 5%) * 0.2), 9%) 16.8%);
+  --sidebar-flat: #262627;
   --sidebar-line: rgba(255, 255, 255, 0.06);
   --list: #1e1e1e;
   --editor: #1e1e1e;

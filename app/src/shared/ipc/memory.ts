@@ -38,6 +38,8 @@ export class MemoryApi implements Api {
   smart: SmartFolder[] = [];
   attachments = new Map<string, Attachment & { url: string }>();
   kv = new Map<string, unknown>();
+  /** What desktopTint() answers; the demo takes it from ?tint=. */
+  tint: string | null = null;
   now: () => number = () => Date.now();
   private seq = 0;
 
@@ -335,5 +337,9 @@ export class MemoryApi implements Api {
 
   async importOld() {
     return null;
+  }
+
+  async desktopTint() {
+    return this.tint;
   }
 }

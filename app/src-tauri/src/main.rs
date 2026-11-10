@@ -7,6 +7,7 @@ mod commands;
 #[cfg(target_os = "linux")]
 mod frame;
 mod protocol;
+mod wallpaper;
 mod window_size;
 
 use std::time::Duration;
@@ -122,6 +123,7 @@ fn main() {
             commands::library::session_get,
             commands::library::session_set,
             commands::library::import_old,
+            commands::library::desktop_tint,
             commands::attachments::attachments_add,
             commands::attachments::attachments_get,
             commands::attachments::attachments_open,
