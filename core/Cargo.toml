@@ -1,0 +1,9 @@
+[package]
+name = "renotes-core"
+description = "Storage and logic for Renotes: folders, notes, search, attachments"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

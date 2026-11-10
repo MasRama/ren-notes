@@ -1,0 +1,4 @@
+[toolchain]
+# Pinned, so CI lints with the clippy you have; bump it on purpose.
+channel = "1.99.1"
+components = ["rustfmt", "clippy"]

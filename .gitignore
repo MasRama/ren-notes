@@ -1,0 +1,7 @@
+target/
+node_modules/
+dist/
+*.log
+/docs/specs
+/docs/plans
+/.superpowers
