@@ -1,5 +1,5 @@
 use rusqlite::types::Value;
-use rusqlite::{params, params_from_iter, OptionalExtension, Row};
+use rusqlite::{params, params_from_iter, OptionalExtension, Row, Transaction};
 
 use super::derive::clamp;
 use super::model::{DocFormat, Note, NoteFilter, NoteSort, NoteSummary, SaveNote, EMPTY_DOC};
@@ -8,10 +8,10 @@ use crate::shared::db::Db;
 use crate::shared::error::{Error, Result};
 use crate::shared::ids::new_id;
 
-const SUMMARY_COLUMNS: &str = "id, folder_id, title, snippet, first_image_id, pinned,
-    has_checklist, has_attachment, created_at, updated_at, deleted_at";
+pub(crate) const SUMMARY_COLUMNS: &str = "id, folder_id, title, snippet, first_image_id, pinned,
+    has_checklist, has_attachment, locked, created_at, updated_at, deleted_at";
 
-fn summary_from(row: &Row) -> rusqlite::Result<NoteSummary> {
+pub(crate) fn summary_from(row: &Row) -> rusqlite::Result<NoteSummary> {
     Ok(NoteSummary {
         id: row.get(0)?,
         folder_id: row.get(1)?,
@@ -21,9 +21,10 @@ fn summary_from(row: &Row) -> rusqlite::Result<NoteSummary> {
         pinned: row.get(5)?,
         has_checklist: row.get(6)?,
         has_attachment: row.get(7)?,
-        created_at: row.get(8)?,
-        updated_at: row.get(9)?,
-        deleted_at: row.get(10)?,
+        locked: row.get(8)?,
+        created_at: row.get(9)?,
+        updated_at: row.get(10)?,
+        deleted_at: row.get(11)?,
     })
 }
 
@@ -52,10 +53,10 @@ pub fn get(db: &Db, id: &str) -> Result<Note> {
             &format!("SELECT {SUMMARY_COLUMNS}, doc_json, doc_format FROM notes WHERE id = ?1"),
             [id],
             |row| {
-                let format: String = row.get(12)?;
+                let format: String = row.get(13)?;
                 Ok(Note {
                     summary: summary_from(row)?,
-                    doc_json: row.get(11)?,
+                    doc_json: row.get(12)?,
                     doc_format: if format == "legacy_html" {
                         DocFormat::LegacyHtml
                     } else {
@@ -74,35 +75,18 @@ pub fn save(db: &mut Db, id: &str, mut input: SaveNote) -> Result<NoteSummary> {
     clamp(&mut input);
     let tags = parse_tags(&input.plain_text);
     db.tx(|tx, now| {
-        let exists: Option<String> = tx
+        let locked: Option<bool> = tx
             .query_row(
-                "SELECT id FROM notes WHERE id = ?1 AND deleted_at IS NULL",
+                "SELECT locked FROM notes WHERE id = ?1 AND deleted_at IS NULL",
                 [id],
                 |r| r.get(0),
             )
             .optional()?;
-        exists.ok_or(Error::NotFound("note"))?;
-
-        tx.execute("DELETE FROM note_attachments WHERE note_id = ?1", [id])?;
-        let mut first_image: Option<String> = None;
-        let mut linked = 0;
-        for attachment in &input.attachment_ids {
-            let mime: Option<String> = tx
-                .query_row(
-                    "SELECT mime FROM attachments WHERE id = ?1",
-                    [attachment],
-                    |r| r.get(0),
-                )
-                .optional()?;
-            let Some(mime) = mime else { continue };
-            linked += tx.execute(
-                "INSERT OR IGNORE INTO note_attachments (note_id, attachment_id) VALUES (?1, ?2)",
-                [id, attachment],
-            )?;
-            if first_image.is_none() && mime.starts_with("image/") {
-                first_image = Some(attachment.clone());
-            }
+        if locked.ok_or(Error::NotFound("note"))? {
+            return Err(Error::Forbidden("the note is locked"));
         }
+
+        let (linked, first_image) = link_attachments(tx, id, &input.attachment_ids)?;
 
         tx.execute("DELETE FROM note_tags WHERE note_id = ?1", [id])?;
         for tag in &tags {
@@ -136,6 +120,36 @@ pub fn save(db: &mut Db, id: &str, mut input: SaveNote) -> Result<NoteSummary> {
             summary_from,
         )?)
     })
+}
+
+/// Links a note to the attachments it holds that the library knows, and
+/// returns how many it links and the first image among them.
+pub(crate) fn link_attachments(
+    tx: &Transaction,
+    id: &str,
+    attachment_ids: &[String],
+) -> Result<(usize, Option<String>)> {
+    tx.execute("DELETE FROM note_attachments WHERE note_id = ?1", [id])?;
+    let mut first_image: Option<String> = None;
+    let mut linked = 0;
+    for attachment in attachment_ids {
+        let mime: Option<String> = tx
+            .query_row(
+                "SELECT mime FROM attachments WHERE id = ?1",
+                [attachment],
+                |r| r.get(0),
+            )
+            .optional()?;
+        let Some(mime) = mime else { continue };
+        linked += tx.execute(
+            "INSERT OR IGNORE INTO note_attachments (note_id, attachment_id) VALUES (?1, ?2)",
+            [id, attachment],
+        )?;
+        if first_image.is_none() && mime.starts_with("image/") {
+            first_image = Some(attachment.clone());
+        }
+    }
+    Ok((linked, first_image))
 }
 
 /// Notes for one view. Pinned notes come first, except in Recently Deleted,
@@ -248,7 +262,7 @@ pub fn delete(db: &mut Db, id: &str) -> Result<()> {
 pub fn delete_if_empty(db: &mut Db, id: &str) -> Result<bool> {
     let removed = db.conn().execute(
         "DELETE FROM notes WHERE id = ?1 AND trim(title) = '' AND trim(plain_text) = ''
-           AND has_attachment = 0",
+           AND has_attachment = 0 AND locked = 0",
         [id],
     )?;
     Ok(removed > 0)

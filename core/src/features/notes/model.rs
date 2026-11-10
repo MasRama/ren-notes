@@ -23,6 +23,8 @@ pub struct NoteSummary {
     pub pinned: bool,
     pub has_checklist: bool,
     pub has_attachment: bool,
+    /// Sealed with the notes password: only the title is in the clear.
+    pub locked: bool,
     pub created_at: i64,
     pub updated_at: i64,
     pub deleted_at: Option<i64>,

@@ -21,6 +21,7 @@ impl Db {
         conn.pragma_update(None, "journal_mode", "wal")?;
         conn.pragma_update(None, "foreign_keys", true)?;
         conn.pragma_update(None, "synchronous", "normal")?;
+        conn.pragma_update(None, "secure_delete", true)?;
         conn.busy_timeout(std::time::Duration::from_secs(5))?;
         super::migrations::run(&mut conn)?;
         Ok(Db { conn, clock })
@@ -72,13 +73,15 @@ mod tests {
     }
 
     #[test]
-    fn open_creates_schema_version_1() {
+    fn open_creates_current_schema() {
         let dir = tempfile::tempdir().unwrap();
         let db = open(&dir);
         assert_eq!(pragma(&db, "user_version"), SCHEMA_VERSION.to_string());
-        assert_eq!(SCHEMA_VERSION, 1);
+        assert_eq!(SCHEMA_VERSION, 2);
         assert_eq!(pragma(&db, "journal_mode"), "wal");
         assert_eq!(pragma(&db, "foreign_keys"), "1");
+        // Deleted text (a note just locked) is overwritten, not left in free pages.
+        assert_eq!(pragma(&db, "secure_delete"), "1");
     }
 
     #[test]
@@ -86,7 +89,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         drop(open(&dir));
         let db = open(&dir);
-        assert_eq!(pragma(&db, "user_version"), "1");
+        assert_eq!(pragma(&db, "user_version"), SCHEMA_VERSION.to_string());
         let ids: Vec<String> = db
             .conn()
             .prepare("SELECT id FROM folders")

@@ -10,6 +10,8 @@ pub enum Error {
     NameTaken,
     #[error("{0}")]
     Forbidden(&'static str),
+    #[error("wrong password")]
+    WrongPassword,
     #[error(transparent)]
     Db(#[from] rusqlite::Error),
     #[error(transparent)]
@@ -25,6 +27,7 @@ impl Error {
             Error::InvalidInput(_) => "invalid_input",
             Error::NameTaken => "name_taken",
             Error::Forbidden(_) => "forbidden",
+            Error::WrongPassword => "wrong_password",
             Error::Db(_) => "db",
             Error::Io(_) => "io",
             Error::Json(_) => "json",

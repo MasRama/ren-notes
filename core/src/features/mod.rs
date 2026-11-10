@@ -3,6 +3,7 @@
 pub mod attachments;
 pub mod folders;
 pub mod import;
+pub mod locks;
 pub mod notes;
 pub mod search;
 pub mod session;

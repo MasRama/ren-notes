@@ -4,10 +4,10 @@ use rusqlite::Connection;
 
 use super::error::Result;
 
-pub const SCHEMA_VERSION: i32 = 1;
+pub const SCHEMA_VERSION: i32 = 2;
 
 /// Every migration, in order. Entry `n` takes the schema from `n` to `n + 1`.
-const MIGRATIONS: &[&str] = &[V1];
+const MIGRATIONS: &[&str] = &[V1, V2];
 
 pub fn run(conn: &mut Connection) -> Result<()> {
     let current: i32 = conn.query_row("PRAGMA user_version", [], |row| row.get(0))?;
@@ -108,4 +108,10 @@ CREATE TABLE kv (
 
 INSERT OR IGNORE INTO folders (id, parent_id, name, sort_index, created_at, updated_at)
 VALUES ('notes', NULL, 'Notes', 0, 0, 0);
+"#;
+
+/// Locked notes: the sealed document lives in `cipher`.
+const V2: &str = r#"
+ALTER TABLE notes ADD COLUMN locked INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE notes ADD COLUMN cipher BLOB NOT NULL DEFAULT x'';
 "#;

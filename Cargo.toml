@@ -12,3 +12,9 @@ repository = "https://github.com/MasRama/ren-notes"
 lto = "thin"
 codegen-units = 1
 strip = true
+
+# Making the notes key takes seconds unoptimised; keep dev builds quick.
+[profile.dev.package.argon2]
+opt-level = 3
+[profile.dev.package.blake2]
+opt-level = 3
