@@ -4,8 +4,14 @@
 //! everything inside, rounded to match.
 
 use gtk::gdk::WindowState;
+use gtk::glib::Propagation;
 use gtk::prelude::*;
-use tauri::WebviewWindow;
+use tauri::{Emitter, WebviewWindow};
+
+/// Sent to the page with `true` or `false` as the window gains or loses
+/// focus, from the same state that dims the frame's shadow. tao's own focus
+/// events need keyboard focus, which a window can lack while still active.
+pub const ACTIVE_EVENT: &str = "renotes:active";
 
 /// Applied to Renotes' own windows only (the `renotes-frame` class).
 const CSS: &str = "
@@ -65,6 +71,15 @@ pub fn apply(window: &WebviewWindow) {
     gtk_window.style_context().add_class("renotes-frame");
     gtk_window.set_titlebar(Some(&gtk::EventBox::new()));
     gtk_window.set_decorated(true);
+
+    let page = window.clone();
+    gtk_window.connect_window_state_event(move |_, event| {
+        if event.changed_mask().contains(WindowState::FOCUSED) {
+            let active = event.new_window_state().contains(WindowState::FOCUSED);
+            let _ = page.emit(ACTIVE_EVENT, active);
+        }
+        Propagation::Proceed
+    });
 }
 
 /// The window's size without the frame's shadow, while it is a normal

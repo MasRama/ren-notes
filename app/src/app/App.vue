@@ -87,8 +87,10 @@ onMounted(async () => {
   const win = await appWindow();
   if (!win) return;
   maximized.value = await win.isMaximized();
+  const { listen } = await import("@tauri-apps/api/event");
   unlisten.push(
-    await win.onFocusChanged(({ payload }) => (windowActive.value = payload)),
+    // From the frame (frame.rs), so the page dims exactly when its shadow does.
+    await listen<boolean>("renotes:active", ({ payload }) => (windowActive.value = payload)),
     await win.onResized(async () => (maximized.value = await win.isMaximized())),
     await win.onCloseRequested(async () => {
       await store.beforeLeave?.();
