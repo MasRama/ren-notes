@@ -14,7 +14,9 @@ use renotes_core::app::Library;
 use renotes_core::features::{attachments, import, trash};
 use renotes_core::shared::paths::data_dir;
 use tauri::http::{Response, StatusCode};
-use tauri::{Manager, WebviewWindow};
+use tauri::Manager;
+#[cfg(not(debug_assertions))]
+use tauri::WebviewWindow;
 
 use commands::AppState;
 
@@ -26,12 +28,15 @@ fn main() {
     let mut library = Library::open(&root).expect("open the library");
     first_start(&mut library);
 
-    tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                show(&window);
-            }
-        }))
+    let builder = tauri::Builder::default();
+    // A dev build runs beside the installed app instead of handing over to it.
+    #[cfg(not(debug_assertions))]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        if let Some(window) = app.get_webview_window("main") {
+            show(&window);
+        }
+    }));
+    builder
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_opener::init())
         .manage(AppState::new(library))
@@ -127,6 +132,7 @@ fn housekeeping(library: &mut Library) {
     }
 }
 
+#[cfg(not(debug_assertions))]
 fn show(window: &WebviewWindow) {
     let _ = window.unminimize();
     let _ = window.show();
