@@ -10,18 +10,20 @@ pub const START_MS: i64 = 1_700_000_000_000;
 pub struct TestDb {
     pub db: Db,
     pub clock: Arc<FixedClock>,
-    _dir: tempfile::TempDir,
+    dir: tempfile::TempDir,
+}
+
+impl TestDb {
+    pub fn dir(&self) -> &std::path::Path {
+        self.dir.path()
+    }
 }
 
 pub fn temp_db() -> TestDb {
     let dir = tempfile::tempdir().unwrap();
     let clock = Arc::new(FixedClock::new(START_MS));
     let db = Db::open(&dir.path().join("library.sqlite"), clock.clone()).unwrap();
-    TestDb {
-        db,
-        clock,
-        _dir: dir,
-    }
+    TestDb { db, clock, dir }
 }
 
 /// Inserts a bare note row straight into the table, for features that need
