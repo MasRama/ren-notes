@@ -58,6 +58,21 @@ pub async fn locks_set_password(
     Ok(())
 }
 
+/// Replaces the notes password; locked notes are open afterwards, with the
+/// new key.
+#[tauri::command]
+pub async fn locks_change_password(
+    state: State<'_, AppState>,
+    old: String,
+    new: String,
+    hint: String,
+) -> CmdResult<()> {
+    let mut library = state.lock();
+    let key = locks::change_password(library.db_mut(), &old, &new, &hint)?;
+    *state.key() = Some(key);
+    Ok(())
+}
+
 /// Opens locked notes with the password.
 #[tauri::command]
 pub async fn locks_open(state: State<'_, AppState>, password: String) -> CmdResult<()> {

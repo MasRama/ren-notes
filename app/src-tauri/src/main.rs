@@ -113,6 +113,7 @@ fn main() {
             commands::notes::notes_delete_if_empty,
             commands::locks::locks_state,
             commands::locks::locks_set_password,
+            commands::locks::locks_change_password,
             commands::locks::locks_open,
             commands::locks::locks_close,
             commands::locks::notes_lock,
