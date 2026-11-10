@@ -5,3 +5,5 @@ pub mod db;
 pub mod error;
 pub mod ids;
 mod migrations;
+#[cfg(test)]
+pub mod testing;
