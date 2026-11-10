@@ -166,7 +166,17 @@ onBeforeUnmount(() => {
 }
 .window.framed {
   border-radius: 10px;
-  box-shadow: inset 0 0 0 0.5px var(--frame);
+}
+/* The light inner edge dark windows have on the Mac. Drawn over the panes,
+   whose own backgrounds would cover an inset shadow. */
+.window.framed::after {
+  content: "";
+  position: absolute;
+  z-index: 100;
+  inset: 0;
+  border: 1px solid var(--frame);
+  border-radius: inherit;
+  pointer-events: none;
 }
 .chrome {
   position: absolute;

@@ -28,7 +28,8 @@
   --shadow-pop: 0 0 0 0.5px rgba(0, 0, 0, 0.18), 0 10px 30px rgba(0, 0, 0, 0.16);
   --check: #e0aa00;
   --danger: #d93a2b;
-  --frame: rgba(0, 0, 0, 0.22);
+  /* Light windows get their outline from the frame's shadow (frame.rs). */
+  --frame: transparent;
   --scroll: rgba(0, 0, 0, 0.22);
 
   --font: "Inter Variable", "Inter", system-ui, sans-serif;
@@ -66,7 +67,7 @@
     --menu-line: rgba(255, 255, 255, 0.12);
     --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 12px 34px rgba(0, 0, 0, 0.5);
     --check: #f2c230;
-    --frame: rgba(255, 255, 255, 0.14);
+    --frame: rgba(255, 255, 255, 0.13);
     --scroll: rgba(255, 255, 255, 0.25);
   }
 }
@@ -98,7 +99,7 @@
   --menu-line: rgba(255, 255, 255, 0.12);
   --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 12px 34px rgba(0, 0, 0, 0.5);
   --check: #f2c230;
-  --frame: rgba(255, 255, 255, 0.14);
+  --frame: rgba(255, 255, 255, 0.13);
   --scroll: rgba(255, 255, 255, 0.25);
 }
 

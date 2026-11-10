@@ -4,6 +4,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
+#[cfg(target_os = "linux")]
+mod frame;
 mod protocol;
 
 use std::time::Duration;
@@ -57,6 +59,10 @@ fn main() {
             });
         })
         .setup(|app| {
+            #[cfg(target_os = "linux")]
+            if let Some(window) = app.get_webview_window("main") {
+                frame::apply(&window);
+            }
             let handle = app.handle().clone();
             std::thread::spawn(move || loop {
                 std::thread::sleep(HOUSEKEEPING_EVERY);
