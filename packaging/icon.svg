@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFDF7"/>
+      <stop offset="1" stop-color="#F3EFE4"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFD54A"/>
+      <stop offset="1" stop-color="#F2B705"/>
+    </linearGradient>
+    <linearGradient id="fold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E9E2CF"/>
+      <stop offset="1" stop-color="#D8CFB6"/>
+    </linearGradient>
+    <clipPath id="tile"><path d="M512 80c246 0 358 0 395 37s37 149 37 395-0 358-37 395-149 37-395 37-358 0-395-37S80 758 80 512s0-358 37-395S266 80 512 80z"/></clipPath>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <g clip-path="url(#tile)">
+      <rect x="80" y="80" width="864" height="864" fill="url(#paper)"/>
+      <rect x="80" y="80" width="864" height="236" fill="url(#band)"/>
+      <rect x="80" y="316" width="864" height="10" fill="#000" opacity="0.06"/>
+      <g stroke="#D9D3C4" stroke-width="10" stroke-linecap="round">
+        <line x1="196" y1="470" x2="828" y2="470"/>
+        <line x1="196" y1="582" x2="828" y2="582"/>
+        <line x1="196" y1="694" x2="640" y2="694"/>
+      </g>
+      <circle cx="232" cy="420" r="0" fill="none"/>
+      <path d="M944 760 L944 944 L760 944 Z" fill="#E3DAC2"/>
+      <path d="M760 944 C770 850 850 770 944 760 L760 760 Z" fill="url(#fold)"/>
+    </g>
+  </g>
+  <path d="M248 214 l34 34 l70 -78" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+</svg>

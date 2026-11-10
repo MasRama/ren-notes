@@ -5,3 +5,4 @@ dist/
 /docs/specs
 /docs/plans
 /.superpowers
+/app/src-tauri/gen
