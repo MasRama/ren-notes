@@ -1,0 +1,181 @@
+/* Colour, type and motion tokens. Light by default; dark follows the
+   system unless the View menu picks one ([data-theme]). */
+:root {
+  color-scheme: light;
+  --window: #ffffff;
+  --sidebar: #eeedeb;
+  --sidebar-line: rgba(0, 0, 0, 0.07);
+  --list: #ffffff;
+  --editor: #ffffff;
+  --toolbar: rgba(255, 255, 255, 0.86);
+  --text: #1d1d1f;
+  --text-2: #86868b;
+  --text-3: #b4b4b9;
+  --line: rgba(0, 0, 0, 0.09);
+  --hover: rgba(0, 0, 0, 0.045);
+  --press: rgba(0, 0, 0, 0.08);
+  --accent: #e0aa00;
+  --accent-text: #9a7300;
+  --select: #fad75a;
+  --select-text: #1d1d1f;
+  --select-2: #e4e4e6;
+  --match: rgba(250, 205, 60, 0.55);
+  --tag: #b07f00;
+  --chip: rgba(0, 0, 0, 0.06);
+  --field: rgba(0, 0, 0, 0.055);
+  --menu: rgba(246, 246, 246, 0.94);
+  --menu-line: rgba(0, 0, 0, 0.1);
+  --shadow-pop: 0 0 0 0.5px rgba(0, 0, 0, 0.18), 0 10px 30px rgba(0, 0, 0, 0.16);
+  --check: #e0aa00;
+  --danger: #d93a2b;
+  --frame: rgba(0, 0, 0, 0.22);
+  --scroll: rgba(0, 0, 0, 0.22);
+
+  --font: "Inter Variable", "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+  --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);
+  --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --toolbar-h: 52px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --window: #1e1e1e;
+    --sidebar: #2a2a2b;
+    --sidebar-line: rgba(255, 255, 255, 0.06);
+    --list: #1e1e1e;
+    --editor: #1e1e1e;
+    --toolbar: rgba(30, 30, 30, 0.86);
+    --text: #ececec;
+    --text-2: #98989d;
+    --text-3: #636366;
+    --line: rgba(255, 255, 255, 0.09);
+    --hover: rgba(255, 255, 255, 0.05);
+    --press: rgba(255, 255, 255, 0.09);
+    --accent: #f2c230;
+    --accent-text: #f2c230;
+    --select: #866a12;
+    --select-text: #ffffff;
+    --select-2: #3a3a3c;
+    --match: rgba(242, 194, 48, 0.42);
+    --tag: #f2c230;
+    --chip: rgba(255, 255, 255, 0.08);
+    --field: rgba(255, 255, 255, 0.08);
+    --menu: rgba(44, 44, 46, 0.95);
+    --menu-line: rgba(255, 255, 255, 0.12);
+    --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 12px 34px rgba(0, 0, 0, 0.5);
+    --check: #f2c230;
+    --frame: rgba(255, 255, 255, 0.14);
+    --scroll: rgba(255, 255, 255, 0.25);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --window: #1e1e1e;
+  --sidebar: #2a2a2b;
+  --sidebar-line: rgba(255, 255, 255, 0.06);
+  --list: #1e1e1e;
+  --editor: #1e1e1e;
+  --toolbar: rgba(30, 30, 30, 0.86);
+  --text: #ececec;
+  --text-2: #98989d;
+  --text-3: #636366;
+  --line: rgba(255, 255, 255, 0.09);
+  --hover: rgba(255, 255, 255, 0.05);
+  --press: rgba(255, 255, 255, 0.09);
+  --accent: #f2c230;
+  --accent-text: #f2c230;
+  --select: #866a12;
+  --select-text: #ffffff;
+  --select-2: #3a3a3c;
+  --match: rgba(242, 194, 48, 0.42);
+  --tag: #f2c230;
+  --chip: rgba(255, 255, 255, 0.08);
+  --field: rgba(255, 255, 255, 0.08);
+  --menu: rgba(44, 44, 46, 0.95);
+  --menu-line: rgba(255, 255, 255, 0.12);
+  --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 12px 34px rgba(0, 0, 0, 0.5);
+  --check: #f2c230;
+  --frame: rgba(255, 255, 255, 0.14);
+  --scroll: rgba(255, 255, 255, 0.25);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--window);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+/* Inside the app the window is transparent so the page can round it. */
+html.framed,
+html.framed body {
+  background: transparent;
+}
+
+#app {
+  height: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: default;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 1px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scroll);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
