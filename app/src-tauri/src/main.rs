@@ -7,16 +7,18 @@ mod commands;
 #[cfg(target_os = "linux")]
 mod frame;
 mod protocol;
+mod window_size;
 
 use std::time::Duration;
 
 use renotes_core::app::Library;
-use renotes_core::features::{attachments, import, trash};
+use renotes_core::features::{attachments, import, session, trash};
 use renotes_core::shared::paths::data_dir;
 use tauri::http::{Response, StatusCode};
-use tauri::Manager;
 #[cfg(not(debug_assertions))]
 use tauri::WebviewWindow;
+use tauri::{AppHandle, Manager};
+use tauri_plugin_window_state::StateFlags;
 
 use commands::AppState;
 
@@ -37,7 +39,12 @@ fn main() {
         }
     }));
     builder
-        .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
+                // The size is kept by window_size.rs instead.
+                .with_state_flags(StateFlags::all() - StateFlags::SIZE)
+                .build(),
+        )
         .plugin(tauri_plugin_opener::init())
         .manage(AppState::new(library))
         .register_asynchronous_uri_scheme_protocol("renotes", |ctx, request, responder| {
@@ -63,10 +70,22 @@ fn main() {
                 responder.respond(response);
             });
         })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { .. } = event {
+                remember_size(window.app_handle());
+            }
+        })
         .setup(|app| {
             #[cfg(target_os = "linux")]
             if let Some(window) = app.get_webview_window("main") {
                 frame::apply(&window);
+                let state = app.state::<AppState>();
+                let saved = session::get(state.lock().db(), window_size::KEY)
+                    .ok()
+                    .flatten();
+                if let Some((width, height)) = window_size::restored(saved) {
+                    frame::resize(&window, width, height);
+                }
             }
             let handle = app.handle().clone();
             std::thread::spawn(move || loop {
@@ -137,4 +156,17 @@ fn show(window: &WebviewWindow) {
     let _ = window.unminimize();
     let _ = window.show();
     let _ = window.set_focus();
+}
+
+/// Keeps the window's size for the next start; a maximized window keeps the
+/// size it had before.
+fn remember_size(app: &AppHandle) {
+    #[cfg(target_os = "linux")]
+    if let Some((width, height)) = app.get_webview_window("main").and_then(|w| frame::size(&w)) {
+        let state = app.state::<AppState>();
+        let saved = window_size::to_saved(width, height);
+        let _ = session::set(state.lock().db_mut(), window_size::KEY, &saved);
+    }
+    #[cfg(not(target_os = "linux"))]
+    let _ = app;
 }

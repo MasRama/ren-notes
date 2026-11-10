@@ -3,6 +3,7 @@
 //! outline (so GNOME snaps and tiles it right), while the page draws
 //! everything inside, rounded to match.
 
+use gtk::gdk::WindowState;
 use gtk::prelude::*;
 use tauri::WebviewWindow;
 
@@ -64,4 +65,23 @@ pub fn apply(window: &WebviewWindow) {
     gtk_window.style_context().add_class("renotes-frame");
     gtk_window.set_titlebar(Some(&gtk::EventBox::new()));
     gtk_window.set_decorated(true);
+}
+
+/// The window's size without the frame's shadow, while it is a normal
+/// window (not maximized, tiled or full screen).
+pub fn size(window: &WebviewWindow) -> Option<(i32, i32)> {
+    let gtk_window = window.gtk_window().ok()?;
+    let state = gtk_window.window()?.state();
+    if state.intersects(WindowState::MAXIMIZED | WindowState::FULLSCREEN | WindowState::TILED) {
+        return None;
+    }
+    Some(gtk_window.size())
+}
+
+/// Sizes the window without its shadow; a maximized window gets this size
+/// back when it is restored.
+pub fn resize(window: &WebviewWindow, width: i32, height: i32) {
+    if let Ok(gtk_window) = window.gtk_window() {
+        gtk_window.resize(width, height);
+    }
 }
