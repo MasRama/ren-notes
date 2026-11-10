@@ -61,6 +61,7 @@ export function demoApi(params: URLSearchParams): MemoryApi {
     theme: params.get("theme") ?? "system",
     view: params.get("view") ?? "list",
     sidebarShown: params.get("sidebar") !== "0",
+    translucentSidebar: params.get("translucent") === "1",
   });
   api.tint = params.get("tint");
   if (params.get("empty")) return api;

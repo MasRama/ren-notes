@@ -7,6 +7,8 @@
      window is active, and goes flat behind other windows, as on the Mac. */
   --sidebar: hsl(var(--tint-h, 40) min(calc(var(--tint-s, 18%) * 0.4), 20%) 92.5%);
   --sidebar-flat: #f1f1f0;
+  --sidebar-glass: hsl(var(--tint-h, 40) min(calc(var(--tint-s, 18%) * 0.4), 20%) 94% / 0.62);
+  --glass-edge: rgba(0, 0, 0, 0.12);
   --sidebar-line: rgba(0, 0, 0, 0.07);
   --list: #ffffff;
   --editor: #ffffff;
@@ -64,6 +66,8 @@
     --window: #1e1e1e;
     --sidebar: hsl(var(--tint-h, 240) min(calc(var(--tint-s, 5%) * 0.2), 9%) 16.8%);
     --sidebar-flat: #262627;
+    --sidebar-glass: hsl(var(--tint-h, 240) min(calc(var(--tint-s, 5%) * 0.2), 9%) 15% / 0.58);
+    --glass-edge: rgba(0, 0, 0, 0.5);
     --sidebar-line: rgba(255, 255, 255, 0.06);
     --list: #1e1e1e;
     --editor: #1e1e1e;
@@ -109,6 +113,8 @@
   --window: #1e1e1e;
   --sidebar: hsl(var(--tint-h, 240) min(calc(var(--tint-s, 5%) * 0.2), 9%) 16.8%);
   --sidebar-flat: #262627;
+  --sidebar-glass: hsl(var(--tint-h, 240) min(calc(var(--tint-s, 5%) * 0.2), 9%) 15% / 0.58);
+  --glass-edge: rgba(0, 0, 0, 0.5);
   --sidebar-line: rgba(255, 255, 255, 0.06);
   --list: #1e1e1e;
   --editor: #1e1e1e;

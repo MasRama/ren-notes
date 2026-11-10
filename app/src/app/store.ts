@@ -39,6 +39,9 @@ export interface Session {
   theme: Theme;
   /** Checked items move to the bottom of their checklist. */
   sinkChecked: boolean;
+  /** The sidebar lets the desktop show through (blurred by the desktop,
+   * when it blurs behind windows). */
+  translucentSidebar: boolean;
   collapsed: string[];
 }
 
@@ -55,6 +58,7 @@ export const DEFAULT_SESSION: Session = {
   groupByDate: true,
   theme: "system",
   sinkChecked: true,
+  translucentSidebar: false,
   collapsed: [],
 };
 
@@ -281,6 +285,11 @@ export class Store {
   async setSort(sort: NoteSort): Promise<void> {
     this.state.sorts = { ...this.state.sorts, [sourceKey(this.state.source)]: sort };
     await this.loadNotes();
+    this.persist();
+  }
+
+  toggleTranslucentSidebar(): void {
+    this.state.translucentSidebar = !this.state.translucentSidebar;
     this.persist();
   }
 
@@ -533,6 +542,7 @@ export class Store {
       groupByDate: s.groupByDate,
       theme: s.theme,
       sinkChecked: s.sinkChecked,
+      translucentSidebar: s.translucentSidebar,
       collapsed: s.collapsed,
     };
   }

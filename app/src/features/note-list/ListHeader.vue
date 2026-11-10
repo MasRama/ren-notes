@@ -33,6 +33,8 @@ function sortMenu(e: MouseEvent) {
         store.persist();
       },
     },
+    { separator: true },
+    { label: "Translucent Sidebar", checked: s.translucentSidebar, action: () => store.toggleTranslucentSidebar() },
   ]);
 }
 
@@ -56,7 +58,7 @@ function remove() {
         <Icon name="gallery" :size="16" />
       </button>
     </div>
-    <button class="tool" title="Sort and group" @click="sortMenu">
+    <button class="tool" title="View options" @click="sortMenu">
       <Icon name="more" :size="18" />
     </button>
     <button class="tool" title="Delete" :disabled="!store.selected" @click="remove">

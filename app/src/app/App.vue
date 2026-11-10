@@ -125,7 +125,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     class="window"
-    :class="{ framed: framed && !maximized, inactive: !windowActive }"
+    :class="{ framed: framed && !maximized, inactive: !windowActive, translucent: s.translucentSidebar }"
     @contextmenu.prevent
   >
     <div class="chrome">
@@ -187,6 +187,22 @@ onBeforeUnmount(() => {
 }
 .window.inactive :deep(.sidebar) {
   background: var(--sidebar-flat);
+}
+/* The desktop shows through the sidebar; the list and the note keep their
+   own backgrounds. Behind other windows it goes flat, as on the Mac. */
+.window.translucent {
+  background: transparent;
+}
+.window.translucent:not(.inactive) :deep(.sidebar) {
+  background: var(--sidebar-glass);
+}
+.window.translucent .panes {
+  background: var(--window);
+}
+/* The sidebar's edge: a shade darker than the glass it closes. */
+.window.translucent:not(.inactive) > .splitter {
+  background: linear-gradient(var(--glass-edge), var(--glass-edge)), var(--sidebar-glass);
+  background-clip: content-box;
 }
 /* Behind other windows the selection goes grey, even in the focused pane. */
 .window.inactive :deep(.focused .row.selected) {

@@ -193,6 +193,14 @@ describe("Store", () => {
     expect(await mem.sessionGet("ui")).toMatchObject({ source: { kind: "trash" }, view: "gallery" });
   });
 
+  it("keeps the sidebar opaque until it is made translucent, and remembers that", async () => {
+    await store.init();
+    expect(store.state.translucentSidebar).toBe(false);
+    store.toggleTranslucentSidebar();
+    await store.persistNow();
+    expect(await mem.sessionGet("ui")).toMatchObject({ translucentSidebar: true });
+  });
+
   it("opens a linked note, going to its folder when the list does not show it", async () => {
     const folder = await mem.foldersCreate("Trips", null);
     const target = await noteIn(folder.id, "Trip budget");
