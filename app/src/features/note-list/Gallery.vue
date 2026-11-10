@@ -4,6 +4,7 @@ import { useStore } from "../../app/context";
 import { listTime } from "../../shared/dates";
 import { NOTE_TYPE } from "../../shared/dnd";
 import type { NoteSummary } from "../../shared/ipc/types";
+import Icon from "../../shared/ui/Icon.vue";
 import Highlighted from "./Highlighted.vue";
 import ListHeader from "./ListHeader.vue";
 import { deleteNote, emptyTrash, noteMenu } from "./actions";
@@ -69,7 +70,10 @@ function dragStart(e: DragEvent, note: NoteSummary) {
             @dragstart="dragStart($event, note)"
           >
             <div class="preview">
-              <img v-if="note.firstImageId" :src="store.api.thumbUrl(note.firstImageId)" alt="" loading="lazy" />
+              <div v-if="note.locked" class="page sealed">
+                <Icon :name="s.locks.open ? 'lockOpen' : 'lock'" :size="26" />
+              </div>
+              <img v-else-if="note.firstImageId" :src="store.api.thumbUrl(note.firstImageId)" alt="" loading="lazy" />
               <div v-else class="page">
                 <strong>{{ note.title }}</strong>
                 <span>{{ note.snippet }}</span>
@@ -167,6 +171,11 @@ function dragStart(e: DragEvent, note: NoteSummary) {
   display: -webkit-box;
   -webkit-line-clamp: 9;
   -webkit-box-orient: vertical;
+}
+.page.sealed {
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
 }
 .page strong {
   display: block;

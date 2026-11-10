@@ -2,6 +2,7 @@ import type {
   Attachment,
   Folder,
   ImportReport,
+  LockState,
   LinkPreview,
   Note,
   NoteFilter,
@@ -30,6 +31,16 @@ export interface Api {
   notesSetPinned(id: string, pinned: boolean): Promise<void>;
   notesDelete(id: string): Promise<void>;
   notesDeleteIfEmpty(id: string): Promise<boolean>;
+
+  locksState(): Promise<LockState>;
+  /** Sets the notes password, once; locked notes are open afterwards. */
+  locksSetPassword(password: string, hint: string): Promise<void>;
+  /** Opens locked notes; fails with `wrong_password`. */
+  locksOpen(password: string): Promise<void>;
+  /** Closes locked notes: their content is sealed until opened again. */
+  locksClose(): Promise<void>;
+  notesLock(id: string): Promise<NoteSummary>;
+  notesRemoveLock(id: string): Promise<NoteSummary>;
 
   trashRecover(id: string): Promise<string>;
   trashPurge(id: string): Promise<void>;

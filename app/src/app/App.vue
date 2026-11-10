@@ -9,6 +9,7 @@ import Splitter from "./Splitter.vue";
 import Icon from "../shared/ui/Icon.vue";
 import ContextMenu from "../shared/ui/ContextMenu.vue";
 import AlertDialog from "../shared/ui/AlertDialog.vue";
+import PasswordSheet from "../features/locks/PasswordSheet.vue";
 import Sidebar from "../features/sidebar/Sidebar.vue";
 import NoteList from "../features/note-list/NoteList.vue";
 import Gallery from "../features/note-list/Gallery.vue";
@@ -165,6 +166,7 @@ onBeforeUnmount(() => {
 
     <ContextMenu />
     <AlertDialog />
+    <PasswordSheet />
     <SmartFolderDialog />
     <Transition name="notice">
       <div v-if="s.notice" class="notice" role="status" @click="s.notice = null">{{ s.notice }}</div>

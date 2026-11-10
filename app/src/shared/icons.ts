@@ -23,6 +23,8 @@ export const ICONS = {
   chevronDown: '<path d="m6 9.5 6 6 6-6"/>',
   plusCircle: '<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><path d="M12 14.6v2"/>',
+  lockOpen: '<rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8 10.5V8a4 4 0 0 1 7.8-1.2"/><path d="M12 14.6v2"/>',
   pin: '<path d="M9 4.5h6l-1 5 3 3v1.5H7V12.5l3-3z"/><path d="M12 14v6"/>',
   clear: '<circle cx="12" cy="12" r="8.5" fill="currentColor" stroke="none"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6" stroke="var(--clear-x, #fff)"/>',
   recover: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/>',

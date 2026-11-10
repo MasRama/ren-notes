@@ -222,4 +222,69 @@ describe("Store", () => {
     await store.deleteNote(a);
     expect(store.noteTitle(a)).toBeUndefined();
   });
+
+  describe("locked notes", () => {
+    async function noteWithTag() {
+      const n = await mem.notesCreate(DEFAULT_FOLDER_ID);
+      await mem.notesSave(n.id, {
+        docJson: '{"secret":true}',
+        title: "Bank",
+        snippet: "PIN 4821",
+        plainText: "Bank\nPIN 4821 #money",
+        hasChecklist: false,
+        attachmentIds: [],
+      });
+      return n.id;
+    }
+
+    it("sets the password once and opens with the right one only", async () => {
+      await store.init();
+      expect(store.state.locks).toEqual({ hasPassword: false, hint: "", open: false });
+      await store.setNotesPassword("hunter2", "the usual");
+      expect(store.state.locks).toEqual({ hasPassword: true, hint: "the usual", open: true });
+      await store.closeLocked();
+      expect(store.state.locks.open).toBe(false);
+      expect(await store.openLocked("nope")).toBe(false);
+      expect(store.state.locks.open).toBe(false);
+      expect(await store.openLocked("hunter2")).toBe(true);
+      expect(store.state.locks.open).toBe(true);
+    });
+
+    it("locks a note, saving what was typed first, and takes it out of tags", async () => {
+      const id = await noteWithTag();
+      await store.init();
+      await store.setNotesPassword("hunter2", "");
+      let flushed = 0;
+      store.beforeLeave = async () => void flushed++;
+      await store.lockNote(id);
+      expect(flushed).toBe(1);
+      expect(store.state.notes[0]).toMatchObject({ id, locked: true, snippet: "" });
+      expect(store.state.tags).toEqual([]);
+      expect(await mem.search("4821")).toEqual([]);
+    });
+
+    it("gives the content back when the lock is removed", async () => {
+      const id = await noteWithTag();
+      await store.init();
+      await store.setNotesPassword("hunter2", "");
+      await store.lockNote(id);
+      await store.removeLock(id);
+      expect(store.state.notes[0]).toMatchObject({ id, locked: false, snippet: "PIN 4821" });
+      expect(store.state.tags.map((t) => t.tag)).toEqual(["money"]);
+      expect((await mem.notesGet(id)).docJson).toBe('{"secret":true}');
+    });
+
+    it("closing locked notes saves first and seals them again", async () => {
+      const id = await noteWithTag();
+      await store.init();
+      await store.setNotesPassword("hunter2", "");
+      await store.lockNote(id);
+      let flushed = 0;
+      store.beforeLeave = async () => void flushed++;
+      await store.closeLocked();
+      expect(flushed).toBe(1);
+      expect((await mem.notesGet(id)).docJson).toBe("");
+      await expect(mem.notesSave(id, { docJson: "{}", title: "Bank", snippet: "", plainText: "Bank", hasChecklist: false, attachmentIds: [] })).rejects.toMatchObject({ code: "forbidden" });
+    });
+  });
 });

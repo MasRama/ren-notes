@@ -20,6 +20,7 @@ import type { NoteLinkQuery } from "./extensions/noteLink";
 import type { Stroke } from "./extensions/sketch";
 import NoteLinkPicker from "./NoteLinkPicker.vue";
 import SketchSheet from "./SketchSheet.vue";
+import LockedNote from "../locks/LockedNote.vue";
 
 const props = defineProps<{ findTerms: string[] | null }>();
 const store = useStore();
@@ -32,6 +33,9 @@ let loadToken = 0;
 const linkQuery = shallowRef<NoteLinkQuery | null>(null);
 const picker = ref<InstanceType<typeof NoteLinkPicker> | null>(null);
 const shownId = ref<string | null>(null);
+/** The note shown is locked and locked notes are closed: its content
+ * never reaches the editor. */
+const sealed = ref(false);
 
 /** The drawing open for drawing; `fresh` when it was just put in. */
 const sketch = shallowRef<{ pos: number; strokes: Stroke[]; height: number; fresh: boolean } | null>(null);
@@ -252,6 +256,7 @@ async function open(id: string | null) {
   edited = false;
   const e = editor.value;
   if (!e) return;
+  sealed.value = false;
   if (!id) {
     noteId = null;
     shownId.value = null;
@@ -266,8 +271,16 @@ async function open(id: string | null) {
     return;
   }
   if (token !== loadToken || e.isDestroyed) return;
-  noteId = id;
   shownId.value = id;
+  if (note.locked && !note.docJson) {
+    // No note to save: nothing typed here can reach a sealed note.
+    noteId = null;
+    sealed.value = true;
+    replaceDoc(e, "");
+    e.setEditable(false, false);
+    return;
+  }
+  noteId = id;
   if (note.docFormat === "legacy_html") {
     replaceDoc(e, note.docJson);
     // Converted once, quietly: the note keeps its edit time.
@@ -286,11 +299,20 @@ watch(
   ([id]) => void load(id),
   { immediate: true },
 );
+// Locked notes opened or closed: show the open note's content, or seal it.
+watch(
+  () => s.locks.open,
+  () => {
+    if (store.selected?.locked) void load(s.selectedId);
+  },
+);
 watch(
   () => [props.findTerms, s.terms] as const,
   ([find, terms]) => editor.value?.commands.setSearchTerms(find ?? terms),
 );
 function focusNow() {
+  // A sealed note takes its password instead.
+  if (sealed.value) return document.querySelector<HTMLInputElement>(".rn-locked input")?.focus();
   const e = editor.value;
   if (e?.isEditable) e.commands.focus(noteId && store.selected?.title ? "end" : "start");
 }
@@ -338,8 +360,9 @@ const date = computed(() => {
 
 <template>
   <div class="page" @mousedown.self="editor?.commands.focus('end')">
-    <p class="date tabular">{{ date }}</p>
-    <EditorContent :editor="editor" class="content" />
+    <LockedNote v-if="sealed" />
+    <p v-else class="date tabular">{{ date }}</p>
+    <EditorContent v-show="!sealed" :editor="editor" class="content" />
     <NoteLinkPicker ref="picker" :editor="editor ?? null" :query="linkQuery" :note-id="shownId" />
     <SketchSheet
       v-if="sketch"

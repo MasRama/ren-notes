@@ -17,6 +17,10 @@ async function open(docJson: string, docFormat: "tiptap" | "legacy_html" = "tipt
   const n = await mem.notesCreate(DEFAULT_FOLDER_ID);
   const stored = mem.notes.find((x) => x.id === n.id)!;
   Object.assign(stored, { docJson, docFormat, title: "Old", updatedAt: 1000, createdAt: 1000 });
+  return { mem, stored, ...(await mount(mem)) };
+}
+
+async function mount(mem: MemoryApi) {
   const store = new Store(mem);
   await store.init();
   const el = document.createElement("div");
@@ -27,7 +31,43 @@ async function open(docJson: string, docFormat: "tiptap" | "legacy_html" = "tipt
   unmount = () => app.unmount();
   await nextTick();
   await wait(500);
-  return { mem, stored, el, store };
+  return { el, store };
+}
+
+const bank = {
+  type: "doc",
+  content: [
+    { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "Bank" }] },
+    { type: "paragraph", content: [{ type: "text", text: "PIN 4821" }] },
+  ],
+};
+
+/** A note locked with "hunter2"; locked notes are closed unless `open`. */
+async function openLocked(open = false) {
+  const mem = new MemoryApi();
+  setApi(mem);
+  const n = await mem.notesCreate(DEFAULT_FOLDER_ID);
+  await mem.notesSave(n.id, {
+    docJson: JSON.stringify(bank),
+    title: "Bank",
+    snippet: "PIN 4821",
+    plainText: "Bank\nPIN 4821",
+    hasChecklist: false,
+    attachmentIds: [],
+  });
+  await mem.locksSetPassword("hunter2", "the usual");
+  await mem.notesLock(n.id);
+  if (!open) await mem.locksClose();
+  const stored = mem.notes.find((x) => x.id === n.id)!;
+  return { mem, stored, ...(await mount(mem)) };
+}
+
+async function typePassword(el: HTMLElement, password: string) {
+  const input = el.querySelector<HTMLInputElement>(".rn-locked input")!;
+  input.value = password;
+  input.dispatchEvent(new Event("input"));
+  el.querySelector<HTMLFormElement>(".rn-locked form")!.dispatchEvent(new Event("submit", { cancelable: true }));
+  await wait(50);
 }
 
 describe("NoteEditor", () => {
@@ -158,5 +198,52 @@ describe("NoteEditor", () => {
     await wait(50);
     expect(document.querySelector(".sketch-sheet")).toBeNull();
     expect(el.querySelector(".rn-sketch")).toBeNull();
+  });
+
+  describe("a locked note", () => {
+    it("shows a lock screen, not its content, while locked notes are closed", async () => {
+      const { el } = await openLocked();
+      expect(el.querySelector(".rn-locked")?.textContent).toContain("This note is locked.");
+      expect(el.querySelector(".rn-doc")?.textContent).not.toContain("4821");
+      expect(currentEditor.value?.isEditable).toBe(false);
+    });
+
+    it("takes the password when asked to focus the note", async () => {
+      const { el, store } = await openLocked();
+      store.state.focusEditor++;
+      await nextTick();
+      expect(document.activeElement).toBe(el.querySelector(".rn-locked input"));
+    });
+
+    it("opens with the notes password typed on the lock screen", async () => {
+      const { el, store } = await openLocked();
+      await typePassword(el, "hunter2");
+      await wait(100);
+      expect(store.state.locks.open).toBe(true);
+      expect(el.querySelector(".rn-locked")).toBeNull();
+      expect(el.querySelector(".rn-doc")?.textContent).toContain("PIN 4821");
+      expect(currentEditor.value?.isEditable).toBe(true);
+    });
+
+    it("shows the hint after a wrong password", async () => {
+      const { el, store } = await openLocked();
+      expect(el.querySelector(".rn-locked")?.textContent).not.toContain("the usual");
+      await typePassword(el, "hunter3");
+      expect(store.state.locks.open).toBe(false);
+      expect(el.querySelector(".rn-locked")?.textContent).toContain("Hint: the usual");
+      expect(el.querySelector<HTMLInputElement>(".rn-locked input")!.value).toBe("");
+    });
+
+    it("saves what is typed sealed, and hides it again when locked notes close", async () => {
+      const { el, store, stored } = await openLocked(true);
+      expect(el.querySelector(".rn-doc")?.textContent).toContain("PIN 4821");
+      currentEditor.value!.chain().focus("end").insertContent(" changed").run();
+      await store.closeLocked();
+      await wait(100);
+      expect(stored.docJson).toBe("");
+      expect(stored.sealed?.docJson).toContain("PIN 4821 changed");
+      expect(el.querySelector(".rn-locked")).not.toBeNull();
+      expect(el.querySelector(".rn-doc")?.textContent).not.toContain("4821");
+    });
   });
 });

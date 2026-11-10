@@ -6,6 +6,8 @@ import FormatMenu from "./FormatMenu.vue";
 import NoteEditor from "./NoteEditor.vue";
 import SearchField from "./SearchField.vue";
 import { vRubberBand } from "../../shared/ui/rubberBand";
+import { openMenu } from "../../shared/ui/menu";
+import { lockMenu } from "../locks/flow";
 
 defineProps<{ chromePad: boolean }>();
 const store = useStore();
@@ -13,7 +15,14 @@ const s = store.state;
 
 const note = computed(() => store.selected);
 const deleted = computed(() => note.value?.deletedAt != null);
-const canEdit = computed(() => !!note.value && !deleted.value);
+/** A locked note while locked notes are closed: nothing to edit. */
+const sealed = computed(() => !!note.value?.locked && !s.locks.open);
+const canEdit = computed(() => !!note.value && !deleted.value && !sealed.value);
+
+function lockButton(e: MouseEvent) {
+  const button = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  if (note.value) openMenu({ clientX: button.left, clientY: button.bottom + 4 }, lockMenu(store, note.value));
+}
 
 // Find in note (Ctrl+Alt+F).
 const finding = ref(false);
@@ -67,6 +76,15 @@ function table() {
         </button>
         <button class="tool" title="Attach a file" :disabled="!canEdit" @click="signals.attachFile++">
           <Icon name="attach" :size="19" />
+        </button>
+        <button
+          class="tool"
+          title="Lock"
+          :disabled="!note || deleted"
+          @mousedown.prevent
+          @click="lockButton"
+        >
+          <Icon :name="note?.locked && s.locks.open ? 'lockOpen' : 'lock'" :size="19" />
         </button>
       </div>
       <SearchField />

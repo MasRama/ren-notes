@@ -97,10 +97,18 @@ watch(
               <div class="title" :class="{ untitled: !note.title }">
                 <Icon v-if="note.pinned && g.label !== 'Pinned'" class="pin" name="pin" :size="12" />
                 <Highlighted :text="note.title || 'New Note'" :terms="s.terms" />
+                <Icon
+                  v-if="note.locked"
+                  class="lock"
+                  :name="s.locks.open ? 'lockOpen' : 'lock'"
+                  :size="12"
+                  :aria-label="s.locks.open ? 'Locked note, open' : 'Locked note'"
+                />
               </div>
               <div class="line">
                 <span class="time tabular">{{ listTime(note.deletedAt ?? note.updatedAt, now) }}</span>
-                <span class="snippet"><Highlighted :text="note.snippet || 'No additional text'" :terms="s.terms" /></span>
+                <span v-if="note.locked" class="snippet">Locked</span>
+                <span v-else class="snippet"><Highlighted :text="note.snippet || 'No additional text'" :terms="s.terms" /></span>
               </div>
               <div v-if="showFolder" class="folder">
                 <Icon name="folder" :size="13" />
@@ -211,6 +219,10 @@ ul {
 .pin {
   color: var(--accent);
   flex: none;
+}
+.lock {
+  flex: none;
+  color: var(--text-2);
 }
 .line {
   display: flex;

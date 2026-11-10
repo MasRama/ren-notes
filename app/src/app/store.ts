@@ -4,6 +4,7 @@ import {
   DEFAULT_FOLDER_ID,
   type CoreError,
   type Folder,
+  type LockState,
   type Note,
   type NoteFilter,
   type NoteSort,
@@ -95,6 +96,8 @@ export interface State extends Session {
   renamingFolder: string | null;
   /** A short message at the bottom (a failed save, an import). */
   notice: string | null;
+  /** The notes password: set or not, and whether locked notes are open. */
+  locks: LockState;
   ready: boolean;
 }
 
@@ -126,6 +129,7 @@ export class Store {
       focusEditor: 0,
       renamingFolder: null,
       notice: null,
+      locks: { hasPassword: false, hint: "", open: false },
       ready: false,
     }) as State;
   }
@@ -135,7 +139,7 @@ export class Store {
   async init(): Promise<void> {
     const saved = (await this.api.sessionGet<Partial<Session>>("ui")) ?? {};
     Object.assign(this.state, DEFAULT_SESSION, saved);
-    await Promise.all([this.refreshSidebar(), this.refreshTitles()]);
+    await Promise.all([this.refreshSidebar(), this.refreshTitles(), this.refreshLocks()]);
     if (!this.sourceExists(this.state.source)) {
       this.state.source = NOTES;
       this.state.selectedId = null;
@@ -386,6 +390,55 @@ export class Store {
     await this.api.notesMove(id, folderId);
     const s = this.state.source;
     if (s.kind === "folder" && s.id !== folderId) this.removeFromList(id);
+    await this.refreshSidebar();
+  }
+
+  // ---- locked notes -----------------------------------------------------
+
+  async refreshLocks(): Promise<void> {
+    this.state.locks = await this.api.locksState();
+  }
+
+  /** Sets the notes password; locked notes are open afterwards. */
+  async setNotesPassword(password: string, hint: string): Promise<void> {
+    await this.api.locksSetPassword(password, hint);
+    await this.refreshLocks();
+  }
+
+  /** Opens locked notes; false when the password is wrong. */
+  async openLocked(password: string): Promise<boolean> {
+    try {
+      await this.api.locksOpen(password);
+    } catch (e) {
+      if (isCoreError(e, "wrong_password")) return false;
+      throw e;
+    }
+    await this.refreshLocks();
+    return true;
+  }
+
+  /** Saves what is typed, then seals every locked note again. */
+  async closeLocked(): Promise<void> {
+    await this.beforeLeave?.();
+    await this.api.locksClose();
+    await this.refreshLocks();
+  }
+
+  /** Shows a summary the core changed without an edit (a lock). */
+  private replaceSummary(summary: NoteSummary): void {
+    const at = this.state.notes.findIndex((n) => n.id === summary.id);
+    if (at >= 0) this.state.notes[at] = summary;
+  }
+
+  async lockNote(id: string): Promise<void> {
+    await this.beforeLeave?.();
+    this.replaceSummary(await this.api.notesLock(id));
+    await this.refreshSidebar();
+  }
+
+  async removeLock(id: string): Promise<void> {
+    await this.beforeLeave?.();
+    this.replaceSummary(await this.api.notesRemoveLock(id));
     await this.refreshSidebar();
   }
 

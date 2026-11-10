@@ -21,6 +21,17 @@ interface StoredNote extends Note {
   tags: string[];
   attachmentIds: string[];
   deletedFrom: string | null;
+  /** A locked note's content, kept aside as the core seals it. */
+  sealed: Sealed | null;
+}
+
+interface Sealed {
+  docJson: string;
+  plainText: string;
+  snippet: string;
+  hasChecklist: boolean;
+  tags: string[];
+  firstImageId: string | null;
 }
 
 function fail(code: string, message: string): never {
@@ -50,8 +61,59 @@ export class MemoryApi implements Api {
   }
 
   private summary(n: StoredNote): NoteSummary {
-    const { docJson: _d, docFormat: _f, plainText: _p, tags: _t, attachmentIds: _a, deletedFrom: _r, ...s } = n;
+    const { docJson: _d, docFormat: _f, plainText: _p, tags: _t, attachmentIds: _a, deletedFrom: _r, sealed: _s, ...s } =
+      n;
     return { ...s };
+  }
+
+  /** The notes password; kept plain, as this API is for tests and the demo. */
+  password: { word: string; hint: string } | null = null;
+  locksOpenNow = false;
+
+  async locksState() {
+    return { hasPassword: !!this.password, hint: this.password?.hint ?? "", open: this.locksOpenNow };
+  }
+  async locksSetPassword(password: string, hint: string) {
+    if (!password.trim()) fail("invalid_input", "a password is needed");
+    if (this.password) fail("forbidden", "a notes password is already set");
+    this.password = { word: password, hint: hint.trim() };
+    this.locksOpenNow = true;
+  }
+  async locksOpen(password: string) {
+    if (!this.password) fail("not_found", "password not found");
+    if (password !== this.password.word) fail("wrong_password", "wrong password");
+    this.locksOpenNow = true;
+  }
+  async locksClose() {
+    this.locksOpenNow = false;
+  }
+  private keyed(): void {
+    if (!this.locksOpenNow) fail("forbidden", "locked notes are closed");
+  }
+  async notesLock(id: string) {
+    this.keyed();
+    const n = this.find(id);
+    if (n.deletedAt !== null) fail("not_found", "note not found");
+    if (n.locked) fail("invalid_input", "the note is already locked");
+    const { docJson, plainText, snippet, hasChecklist, tags, firstImageId } = n;
+    Object.assign(n, {
+      locked: true,
+      sealed: { docJson, plainText, snippet, hasChecklist, tags, firstImageId },
+      docJson: "",
+      plainText: "",
+      snippet: "",
+      hasChecklist: false,
+      tags: [],
+      firstImageId: null,
+    });
+    return this.summary(n);
+  }
+  async notesRemoveLock(id: string) {
+    this.keyed();
+    const n = this.find(id);
+    if (!n.locked || !n.sealed) fail("invalid_input", "the note is not locked");
+    Object.assign(n, { ...n.sealed, locked: false, sealed: null });
+    return this.summary(n);
   }
 
   private find(id: string): StoredNote {
@@ -157,7 +219,8 @@ export class MemoryApi implements Api {
   }
   async notesGet(id: string) {
     const n = this.find(id);
-    return { ...this.summary(n), docJson: n.docJson, docFormat: n.docFormat };
+    const docJson = n.locked && this.locksOpenNow ? n.sealed!.docJson : n.docJson;
+    return { ...this.summary(n), docJson, docFormat: n.docFormat };
   }
   async notesCreate(folderId: string) {
     if (!this.folders.some((f) => f.id === folderId)) fail("not_found", "folder not found");
@@ -171,6 +234,7 @@ export class MemoryApi implements Api {
       pinned: false,
       hasChecklist: false,
       hasAttachment: false,
+      locked: false,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -180,6 +244,7 @@ export class MemoryApi implements Api {
       tags: [],
       attachmentIds: [],
       deletedFrom: null,
+      sealed: null,
     };
     this.notes.push(n);
     return this.notesGet(n.id);
@@ -188,6 +253,24 @@ export class MemoryApi implements Api {
     const n = this.find(id);
     if (n.deletedAt !== null) fail("not_found", "note not found");
     const known = input.attachmentIds.filter((a) => this.attachments.has(a));
+    if (n.locked) {
+      this.keyed();
+      Object.assign(n, {
+        title: input.title.replace(/\s+/g, " ").trim().slice(0, 200),
+        sealed: {
+          docJson: input.docJson,
+          plainText: input.plainText,
+          snippet: input.snippet.replace(/\s+/g, " ").trim().slice(0, 300),
+          hasChecklist: input.hasChecklist,
+          tags: parseTags(input.plainText),
+          firstImageId: known.find((a) => this.attachments.get(a)?.mime.startsWith("image/")) ?? null,
+        },
+        attachmentIds: known,
+        hasAttachment: known.length > 0,
+        updatedAt: input.keepTime ? n.updatedAt : this.now(),
+      });
+      return this.summary(n);
+    }
     Object.assign(n, {
       docJson: input.docJson,
       docFormat: "tiptap",
@@ -218,7 +301,7 @@ export class MemoryApi implements Api {
   }
   async notesDeleteIfEmpty(id: string) {
     const n = this.notes.find((x) => x.id === id);
-    if (!n || n.title.trim() || n.plainText.trim() || n.hasAttachment) return false;
+    if (!n || n.locked || n.title.trim() || n.plainText.trim() || n.hasAttachment) return false;
     this.notes = this.notes.filter((x) => x.id !== id);
     return true;
   }

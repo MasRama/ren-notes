@@ -20,6 +20,8 @@ export interface NoteSummary {
   pinned: boolean;
   hasChecklist: boolean;
   hasAttachment: boolean;
+  /** Sealed with the notes password: only the title is in the clear. */
+  locked: boolean;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;
@@ -91,6 +93,14 @@ export interface LinkPreview {
   imageId: string | null;
 }
 
+/** The notes password, as far as the page may know it. */
+export interface LockState {
+  hasPassword: boolean;
+  hint: string;
+  /** The password was typed: locked notes show their content. */
+  open: boolean;
+}
+
 export interface ImportReport {
   folders: number;
   notes: number;
@@ -98,6 +108,6 @@ export interface ImportReport {
 
 /** An error from the core: `code` is stable, `message` is for people. */
 export interface CoreError {
-  code: "not_found" | "invalid_input" | "name_taken" | "forbidden" | "db" | "io" | "json";
+  code: "not_found" | "invalid_input" | "name_taken" | "forbidden" | "wrong_password" | "db" | "io" | "json";
   message: string;
 }

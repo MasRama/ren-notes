@@ -19,6 +19,13 @@ export function tauriApi(): Api {
     notesDelete: (id) => invoke("notes_delete", { id }),
     notesDeleteIfEmpty: (id) => invoke("notes_delete_if_empty", { id }),
 
+    locksState: () => invoke("locks_state"),
+    locksSetPassword: (password, hint) => invoke("locks_set_password", { password, hint }),
+    locksOpen: (password) => invoke("locks_open", { password }),
+    locksClose: () => invoke("locks_close"),
+    notesLock: (id) => invoke("notes_lock", { id }),
+    notesRemoveLock: (id) => invoke("notes_remove_lock", { id }),
+
     trashRecover: (id) => invoke("trash_recover", { id }),
     trashPurge: (id) => invoke("trash_purge", { id }),
     trashEmpty: () => invoke("trash_empty"),

@@ -102,6 +102,7 @@ export function demoApi(params: URLSearchParams): MemoryApi {
       pinned: !!extra.pinned,
       hasChecklist: fields.hasChecklist,
       hasAttachment: fields.attachmentIds.length > 0,
+      locked: false,
       createdAt: at - 3 * DAY,
       updatedAt: at,
       deletedAt: extra.deleted !== undefined ? now - extra.deleted : null,
@@ -111,6 +112,7 @@ export function demoApi(params: URLSearchParams): MemoryApi {
       tags: (fields.plainText.match(/#[\p{L}\p{N}_-]+/gu) ?? []).map((t) => t.slice(1).toLowerCase()),
       attachmentIds: fields.attachmentIds,
       deletedFrom: extra.deleted !== undefined ? folderId : null,
+      sealed: null,
     });
     return id;
   };
@@ -181,6 +183,17 @@ export function demoApi(params: URLSearchParams): MemoryApi {
   add(folders.personal.id, 70 * DAY, [h(1, "Gift ideas"), p("A good fountain pen for Bapak. Plants for the balcony.")]);
   add(DEFAULT_FOLDER_ID, 400 * DAY, [h(1, "Old meeting notes"), p("Decided to move the office in March.")]);
   add(DEFAULT_FOLDER_ID, 20 * DAY, [h(1, "Draft that went nowhere"), p("Maybe later.")], { deleted: 2 * DAY });
+
+  // Locked with "renotes"; ?unlocked=1 starts with locked notes open.
+  const bank = add(folders.personal.id, 6 * DAY, [
+    h(1, "Bank accounts"),
+    p("Savings at Bank Arta: 0123 4567 89."),
+    p("Card PIN is the year we moved."),
+  ]);
+  api.password = { word: "renotes", hint: "The app’s name" };
+  api.locksOpenNow = true;
+  void api.notesLock(bank);
+  api.locksOpenNow = params.get("unlocked") === "1";
 
   api.smart.push({
     id: "smart-work",

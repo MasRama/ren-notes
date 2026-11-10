@@ -13,6 +13,7 @@ function note(id: string, updated: Date, pinned = false): NoteSummary {
     firstImageId: null,
     pinned,
     hasChecklist: false,
+    locked: false,
     hasAttachment: false,
     createdAt: updated.getTime(),
     updatedAt: updated.getTime(),

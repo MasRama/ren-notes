@@ -3,6 +3,7 @@ import { DEFAULT_FOLDER_ID, type NoteSummary } from "../../shared/ipc/types";
 import { confirmDialog } from "../../shared/ui/dialog";
 import { openMenu, type MenuItem } from "../../shared/ui/menu";
 import { findMatches } from "../editor/extensions/highlight";
+import { lockNote, removeLock } from "../locks/flow";
 
 /** Deletes a note; one already in Recently Deleted is gone for good, so ask. */
 export async function deleteNote(store: Store, note: NoteSummary): Promise<void> {
@@ -46,6 +47,9 @@ export function noteMenu(e: MouseEvent, store: Store, note: NoteSummary): void {
   }));
   openMenu(e, [
     { label: note.pinned ? "Unpin Note" : "Pin Note", action: () => void store.setPinned(note.id, !note.pinned) },
+    note.locked
+      ? { label: "Remove Lock", action: () => void removeLock(store, note) }
+      : { label: "Lock Note", action: () => void lockNote(store, note) },
     { separator: true },
     ...moves,
     ...(moves.length ? [{ separator: true } as MenuItem] : []),
