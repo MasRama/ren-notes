@@ -9,10 +9,12 @@ import { isTauri, setApi, type Api } from "./shared/ipc/api";
 
 async function boot() {
   let api: Api;
-  if (isTauri()) {
+  if (isTauri()) document.documentElement.classList.add("framed");
+  // VITE_DEMO=1 shows the demo library in the real window, for screenshots
+  // that keep your own notes out of them.
+  if (isTauri() && import.meta.env.VITE_DEMO !== "1") {
     const { tauriApi } = await import("./shared/ipc/tauri");
     api = tauriApi();
-    document.documentElement.classList.add("framed");
   } else {
     const { demoApi } = await import("./shared/ipc/demo");
     api = demoApi(new URLSearchParams(location.search));

@@ -40,6 +40,17 @@ quickest way to work on the interface. `?theme=dark`, `?view=gallery`,
 To try the app without touching your own notes, point it at another data
 folder: `XDG_DATA_HOME=/tmp/renotes-try npm run tauri dev`.
 
+To see the window frame (shadow, corners, tiling) without it landing on your
+desktop, run the app in a headless GNOME Shell of its own. It uses demo data
+and a private session bus, so it touches neither your notes nor your session:
+
+```sh
+cargo build -p renotes-app
+tools/devshell/run.sh           # --dark for the dark style
+tools/devshell/shot.sh frame    # in another terminal: target/devshell/shots/frame.png
+tools/devshell/stop.sh
+```
+
 ## Making a change
 
 - Write a test that fails without your change, then make it pass.
