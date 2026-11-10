@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.0](https://github.com/MasRama/ren-notes/compare/v0.1.0...v0.2.0) (2026-11-10)
+
+
+### Features
+
+* **app:** frost menus, popovers and dialogs like the Mac ([f223dc4](https://github.com/MasRama/ren-notes/commit/f223dc4880a1649fa1cb3f8fed9cf715853fdf3e))
+* **app:** give the Linux window a rounded, shadowed frame ([f0aa89d](https://github.com/MasRama/ren-notes/commit/f0aa89d291048124e5e31bf3a2a83fb0b27bfd6f))
+* **app:** grey the selected note while the window is in the background ([bb59d73](https://github.com/MasRama/ren-notes/commit/bb59d7336c3166c16a63e7d970cb7929f49fedfd))
+* **app:** let the panes stretch past their ends and spring back ([9f9d0e0](https://github.com/MasRama/ren-notes/commit/9f9d0e0375c3b1fe997e4018de0c883c25932729))
+* **app:** read a web page's title, site and picture for link cards ([c3ebfe4](https://github.com/MasRama/ren-notes/commit/c3ebfe4fb74b1dda46d396415ff1f9a0572c5a19))
+* **app:** tint the sidebar with the wallpaper's colour ([e9f7c50](https://github.com/MasRama/ren-notes/commit/e9f7c503eb1e231434afe40197b22d129a7dde5f))
+* **editor:** fold a heading's section away, as on the Mac ([16eaa9c](https://github.com/MasRama/ren-notes/commit/16eaa9c1a0d0acda7580fea4a2a2f73ee306de41))
+* **editor:** highlight text in the Mac's five colours ([ac84a6a](https://github.com/MasRama/ren-notes/commit/ac84a6a22c51e5a724fc874eba85c5cd5a7f65e3))
+* **editor:** set titles and headings at the Mac's sizes ([b0ce1ed](https://github.com/MasRama/ren-notes/commit/b0ce1ed1b2ed9fd9b4cc3c93de83dcbd3b28c168))
+* **editor:** show a link pasted on its own line as a card ([a6e5923](https://github.com/MasRama/ren-notes/commit/a6e5923c43f9c6a4848d3a49fd94be86f904b3f5))
+* **smart-folders:** draw the dialog's controls as on the Mac ([3768735](https://github.com/MasRama/ren-notes/commit/3768735b9903dce23010e18cb9271a0360438bb0))
+
+
+### Bug Fixes
+
+* **app:** dim the window whenever GNOME shows it in the background ([893b057](https://github.com/MasRama/ren-notes/commit/893b05723e753c0088020bafad44f4b6414038df))
+* **app:** stop the framed window growing on every start ([5467e5d](https://github.com/MasRama/ren-notes/commit/5467e5d44087605e46b62334ad3250968d5c73b5))
+* **smart-folders:** let smart folders be edited and saved with tags ([a0a076f](https://github.com/MasRama/ren-notes/commit/a0a076fe1b8555a55027364a8a1f0521913edcbd))
+
 ## 0.1.0 (2026-11-10)
 
 
