@@ -46,7 +46,7 @@ watch(
   padding: 20px 16px 16px;
   border-radius: 12px;
   background: var(--menu);
-  backdrop-filter: blur(30px) saturate(1.6);
+  backdrop-filter: var(--menu-blur);
   box-shadow: var(--shadow-pop);
   text-align: center;
 }

@@ -251,6 +251,7 @@ onBeforeUnmount(() => {
   padding: 8px 14px;
   border-radius: 8px;
   background: var(--menu);
+  backdrop-filter: var(--menu-blur);
   box-shadow: var(--shadow-pop);
   font-size: 12px;
   z-index: 50;

@@ -142,7 +142,7 @@ async function save() {
   padding: 18px 20px 16px;
   border-radius: 12px;
   background: var(--menu);
-  backdrop-filter: blur(30px) saturate(1.6);
+  backdrop-filter: var(--menu-blur);
   box-shadow: var(--shadow-pop);
   font-size: 13px;
 }

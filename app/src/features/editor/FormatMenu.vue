@@ -140,7 +140,7 @@ onBeforeUnmount(() => {
   padding: 8px 6px 6px;
   border-radius: 11px;
   background: var(--menu);
-  backdrop-filter: blur(24px) saturate(1.6);
+  backdrop-filter: var(--menu-blur);
   box-shadow: var(--shadow-pop);
   transform-origin: top center;
 }
