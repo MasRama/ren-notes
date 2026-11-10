@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.3.0](https://github.com/MasRama/ren-notes/compare/v0.2.0...v0.3.0) (2026-11-10)
+
+
+### Features
+
+* **app:** change the notes password from the lock menu ([520b59e](https://github.com/MasRama/ren-notes/commit/520b59e64f34acb5f592e9d2fe3b392e78f35c99))
+* **app:** close locked notes after a while without use ([13e43b1](https://github.com/MasRama/ren-notes/commit/13e43b18852499f8c4218751fcf6a107efb57f2e))
+* **app:** command to change the notes password ([e2e8c3e](https://github.com/MasRama/ren-notes/commit/e2e8c3e03c9b0b5ce89297923e538f8fef2aa86c))
+* **app:** commands to set the notes password and open, close and lock notes ([ce5a838](https://github.com/MasRama/ren-notes/commit/ce5a838cc1aa49564b1a41c6366831f401c136b2))
+* **app:** let the sidebar show the desktop through it ([629fdbb](https://github.com/MasRama/ren-notes/commit/629fdbb57610fd9829f8de6edb9e5e1dfa195edf))
+* **app:** lock a note from the toolbar or the list, and open it with the password ([a2fb3cd](https://github.com/MasRama/ren-notes/commit/a2fb3cd674549484812407d76260831053479c48))
+* **core:** change the notes password, sealing every locked note again ([667f107](https://github.com/MasRama/ren-notes/commit/667f10764eb7a2f0a7f927bdfff57bd6bcd4a82d))
+* **core:** lock notes with a password, sealing their content ([b17a86a](https://github.com/MasRama/ren-notes/commit/b17a86a4aac193bceff778b1d8104a352cbd7160))
+* **editor:** draw in a note with pen, marker and eraser ([9fb1ed8](https://github.com/MasRama/ren-notes/commit/9fb1ed87ba6a7d4aa7d8bbac45a4bcca7441d96d))
+* **editor:** link to another note by typing &gt;&gt; ([55c581e](https://github.com/MasRama/ren-notes/commit/55c581ed49934976506e57d4a4edebca5e7a11ec))
+* **editor:** work out sums ending in = as Math Notes does ([4430cdf](https://github.com/MasRama/ren-notes/commit/4430cdfe1c6b501a5edfdc2a9d0b0c6a9109635f))
+
+
+### Bug Fixes
+
+* **app:** let Tab move between a dialog's fields ([b9a06c1](https://github.com/MasRama/ren-notes/commit/b9a06c16cb96ac596621e27b157f9ee702b23261))
+
 ## [0.2.0](https://github.com/MasRama/ren-notes/compare/v0.1.0...v0.2.0) (2026-11-10)
 
 

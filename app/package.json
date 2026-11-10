@@ -1,6 +1,6 @@
 {
   "name": "renotes-app",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Renotes' page: the three panes and the editor, drawn in WebKitGTK",
   "license": "GPL-3.0-or-later",
