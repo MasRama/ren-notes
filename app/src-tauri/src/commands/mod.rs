@@ -4,6 +4,7 @@
 pub mod attachments;
 pub mod folders;
 pub mod library;
+pub mod links;
 pub mod notes;
 
 use std::sync::{Mutex, MutexGuard};

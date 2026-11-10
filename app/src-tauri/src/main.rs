@@ -6,6 +6,7 @@
 mod commands;
 #[cfg(target_os = "linux")]
 mod frame;
+mod link_preview;
 mod protocol;
 mod wallpaper;
 mod window_size;
@@ -127,6 +128,7 @@ fn main() {
             commands::attachments::attachments_add,
             commands::attachments::attachments_get,
             commands::attachments::attachments_open,
+            commands::links::link_preview,
         ])
         .run(tauri::generate_context!())
         .expect("run Renotes");

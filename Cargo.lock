@@ -2977,12 +2977,14 @@ dependencies = [
  "renotes-core",
  "serde",
  "serde_json",
+ "soup3",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
  "tauri-plugin-single-instance",
  "tauri-plugin-window-state",
  "tempfile",
+ "url",
 ]
 
 [[package]]
