@@ -1,3 +1,4 @@
+use rusqlite::types::Value;
 use rusqlite::{params, params_from_iter, OptionalExtension, Row};
 
 use super::derive::clamp;
@@ -145,7 +146,7 @@ pub fn list(db: &Db, filter: &NoteFilter, sort: NoteSort) -> Result<Vec<NoteSumm
         NoteFilter::Trash => "deleted_at IS NOT NULL".to_owned(),
         NoteFilter::Folder(folder) => {
             args.push(folder.clone());
-            "deleted_at IS NULL AND folder_id = ?1".to_owned()
+            "deleted_at IS NULL AND folder_id = ?".to_owned()
         }
         NoteFilter::Tags(tags) => {
             let mut wanted: Vec<String> = tags.iter().map(|t| t.to_lowercase()).collect();
@@ -161,12 +162,31 @@ pub fn list(db: &Db, filter: &NoteFilter, sort: NoteSort) -> Result<Vec<NoteSumm
             )
         }
     };
-    let order = match (filter, sort) {
-        (NoteFilter::Trash, _) => "deleted_at DESC, id DESC",
-        (_, NoteSort::Edited) => "pinned DESC, updated_at DESC, id DESC",
-        (_, NoteSort::Created) => "pinned DESC, created_at DESC, id DESC",
-        (_, NoteSort::Title) => "pinned DESC, title COLLATE NOCASE, updated_at DESC",
+    let order = match filter {
+        NoteFilter::Trash => "deleted_at DESC, id DESC",
+        _ => order_for(sort),
     };
+    let args: Vec<Value> = args.into_iter().map(Value::Text).collect();
+    list_where(db, &condition, &args, order)
+}
+
+/// The ORDER BY for a sort, pinned notes first.
+pub(crate) fn order_for(sort: NoteSort) -> &'static str {
+    match sort {
+        NoteSort::Edited => "pinned DESC, updated_at DESC, id DESC",
+        NoteSort::Created => "pinned DESC, created_at DESC, id DESC",
+        NoteSort::Title => "pinned DESC, title COLLATE NOCASE, updated_at DESC",
+    }
+}
+
+/// Summaries matching an SQL condition over the notes table, for features
+/// that build their own filters (smart folders, search).
+pub(crate) fn list_where(
+    db: &Db,
+    condition: &str,
+    args: &[Value],
+    order: &str,
+) -> Result<Vec<NoteSummary>> {
     let sql = format!("SELECT {SUMMARY_COLUMNS} FROM notes WHERE {condition} ORDER BY {order}");
     let notes = db
         .conn()

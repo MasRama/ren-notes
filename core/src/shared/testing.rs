@@ -35,3 +35,19 @@ pub fn insert_note(db: &Db, id: &str, folder_id: &str) {
         )
         .unwrap();
 }
+
+/// Creates a note in the Notes folder holding `text` (first line is the title).
+pub fn note_with_text(db: &mut Db, text: &str) -> String {
+    use crate::features::folders::DEFAULT_FOLDER_ID;
+    use crate::features::notes::{self, SaveNote};
+    let id = notes::create(db, DEFAULT_FOLDER_ID).unwrap().summary.id;
+    let input = SaveNote {
+        doc_json: "{}".into(),
+        title: text.lines().next().unwrap_or("").into(),
+        snippet: text.lines().nth(1).unwrap_or("").into(),
+        plain_text: text.into(),
+        ..Default::default()
+    };
+    notes::save(db, &id, input).unwrap();
+    id
+}
