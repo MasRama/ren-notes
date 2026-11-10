@@ -115,7 +115,7 @@ pub fn save(db: &mut Db, id: &str, mut input: SaveNote) -> Result<NoteSummary> {
         tx.execute(
             "UPDATE notes SET doc_json = ?2, doc_format = 'tiptap', title = ?3, snippet = ?4,
                 plain_text = ?5, has_checklist = ?6, has_attachment = ?7, first_image_id = ?8,
-                updated_at = ?9
+                updated_at = CASE WHEN ?10 THEN updated_at ELSE ?9 END
              WHERE id = ?1",
             params![
                 id,
@@ -126,7 +126,8 @@ pub fn save(db: &mut Db, id: &str, mut input: SaveNote) -> Result<NoteSummary> {
                 input.has_checklist,
                 linked > 0,
                 first_image,
-                now
+                now,
+                input.keep_time
             ],
         )?;
         Ok(tx.query_row(
@@ -268,6 +269,7 @@ mod tests {
             plain_text: plain.into(),
             has_checklist: false,
             attachment_ids: vec![],
+            keep_time: false,
         }
     }
 
@@ -380,6 +382,18 @@ mod tests {
         assert_eq!(get(&t.db, &id).unwrap().doc_format, DocFormat::LegacyHtml);
         save(&mut t.db, &id, text("x")).unwrap();
         assert_eq!(get(&t.db, &id).unwrap().doc_format, DocFormat::Tiptap);
+    }
+
+    #[test]
+    fn save_keeping_time_leaves_edit_time() {
+        let mut t = temp_db();
+        let id = create(&mut t.db, DEFAULT_FOLDER_ID).unwrap().summary.id;
+        t.clock.advance(1000);
+        let mut input = text("converted");
+        input.keep_time = true;
+        let summary = save(&mut t.db, &id, input).unwrap();
+        assert_eq!(summary.updated_at, START_MS);
+        assert_eq!(summary.title, "converted");
     }
 
     #[test]

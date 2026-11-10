@@ -48,6 +48,10 @@ pub struct SaveNote {
     pub plain_text: String,
     pub has_checklist: bool,
     pub attachment_ids: Vec<String>,
+    /// Keep the edit time, for saves that are not edits (converting a note
+    /// imported from the old app when it is first opened).
+    #[serde(default)]
+    pub keep_time: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
