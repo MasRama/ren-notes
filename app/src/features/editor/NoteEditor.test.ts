@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { createApp, defineComponent, h, nextTick } from "vue";
-import { StoreKey } from "../../app/context";
+import { currentEditor, StoreKey } from "../../app/context";
 import { Store } from "../../app/store";
 import { setApi } from "../../shared/ipc/api";
 import { MemoryApi } from "../../shared/ipc/memory";
@@ -70,5 +70,20 @@ describe("NoteEditor", () => {
     await store.newNote();
     await wait(300);
     expect(el.querySelector(".ProseMirror")?.contains(document.activeElement)).toBe(true);
+  });
+
+  it("folding a heading is saved without changing the edit time", async () => {
+    const doc = {
+      type: "doc",
+      content: [
+        { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Pack" }] },
+        { type: "paragraph", content: [{ type: "text", text: "jackets" }] },
+      ],
+    };
+    const { stored } = await open(JSON.stringify(doc));
+    currentEditor.value!.commands.toggleFold(0);
+    await wait(500);
+    expect(JSON.parse(stored.docJson).content[0].attrs.collapsed).toBe(true);
+    expect(stored.updatedAt).toBe(1000);
   });
 });

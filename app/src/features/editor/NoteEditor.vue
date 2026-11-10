@@ -14,6 +14,7 @@ import { deriveFields, type DocNode } from "./derive";
 import { insertFiles } from "./files";
 import { noteExtensions } from "./extensions";
 import { toggleCheckedAt } from "./extensions/checklist";
+import { onlyFolds } from "./extensions/folding";
 
 const props = defineProps<{ findTerms: string[] | null }>();
 const store = useStore();
@@ -23,9 +24,19 @@ const api = store.api;
 let noteId: string | null = null;
 let loadToken = 0;
 
+// Folding a heading is saved with the note but is not an edit to it.
+let edited = false;
+
 const autosave = new Autosave({
   delay: 300,
-  save: () => save(false),
+  save: () => {
+    const keepTime = !edited;
+    edited = false;
+    return save(keepTime).catch((error: unknown) => {
+      if (!keepTime) edited = true;
+      throw error;
+    });
+  },
   onError: () => (s.notice = "Can’t save this note right now. Trying again…"),
   onRecovered: () => (s.notice = null),
 });
@@ -95,7 +106,10 @@ const editor = useEditor({
       },
     },
   },
-  onUpdate: () => autosave.changed(),
+  onUpdate: ({ transaction, appendedTransactions }) => {
+    if (!onlyFolds([transaction, ...appendedTransactions])) edited = true;
+    autosave.changed();
+  },
   onFocus: () => (s.focus = "editor"),
   onBlur: () => void autosave.flush(),
 });
@@ -133,6 +147,7 @@ async function load(id: string | null) {
 async function open(id: string | null) {
   const token = ++loadToken;
   autosave.reset();
+  edited = false;
   const e = editor.value;
   if (!e) return;
   if (!id) {

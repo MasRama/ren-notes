@@ -8,6 +8,7 @@ import { NoteShortcuts, type ShortcutOptions } from "./shortcuts";
 import { SearchHighlight, TagHighlight } from "./highlight";
 import { SinkChecked } from "./checklist";
 import { NoteHighlight } from "./colors";
+import { HeadingFolding } from "./folding";
 
 export type EditorOptions = NodeOptions &
   ShortcutOptions & {
@@ -33,6 +34,7 @@ export function noteExtensions(options: EditorOptions): AnyExtension[] {
     NoteShortcuts.configure({ toggleChecked: options.toggleChecked }),
     SinkChecked.configure({ enabled: options.sinkChecked ?? (() => true) }),
     NoteHighlight,
+    HeadingFolding,
     TagHighlight,
     SearchHighlight,
   ];
