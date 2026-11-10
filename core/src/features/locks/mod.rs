@@ -7,5 +7,6 @@ mod store;
 
 pub use crypto::Key;
 pub use store::{
-    is_locked, lock, open, password_info, remove, save, set_password, unlock, PasswordInfo,
+    change_password, is_locked, lock, open, password_info, remove, save, set_password, unlock,
+    PasswordInfo,
 };

@@ -1,7 +1,7 @@
 //! Small JSON values that bring the app back to where it was: the selected
 //! note, scroll positions, pane widths, settings.
 
-use rusqlite::{params, OptionalExtension};
+use rusqlite::{params, Connection, OptionalExtension};
 
 use crate::shared::db::Db;
 use crate::shared::error::Result;
@@ -17,7 +17,12 @@ pub fn get(db: &Db, key: &str) -> Result<Option<serde_json::Value>> {
 }
 
 pub fn set(db: &mut Db, key: &str, value: &serde_json::Value) -> Result<()> {
-    db.conn().execute(
+    set_in(db.conn(), key, value)
+}
+
+/// `set` inside a transaction (or on any connection).
+pub(crate) fn set_in(conn: &Connection, key: &str, value: &serde_json::Value) -> Result<()> {
+    conn.execute(
         "INSERT INTO kv (key, value) VALUES (?1, ?2)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value",
         params![key, serde_json::to_string(value)?],

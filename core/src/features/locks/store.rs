@@ -56,13 +56,10 @@ pub fn password_info(db: &Db) -> Result<Option<PasswordInfo>> {
     Ok(record(db)?.map(|r| PasswordInfo { hint: r.hint }))
 }
 
-/// Sets the library's notes password, once, and returns its key.
-pub fn set_password(db: &mut Db, password: &str, hint: &str) -> Result<Key> {
+/// A fresh salt and key for `password`, and the record that proves it.
+fn new_record(password: &str, hint: &str) -> Result<(Record, Key)> {
     if password.trim().is_empty() {
         return Err(Error::InvalidInput("a password is needed".into()));
-    }
-    if record(db)?.is_some() {
-        return Err(Error::Forbidden("a notes password is already set"));
     }
     let salt = crypto::random::<16>();
     let key = crypto::derive(password, &salt, COST)?;
@@ -72,7 +69,41 @@ pub fn set_password(db: &mut Db, password: &str, hint: &str) -> Result<Key> {
         check: crypto::to_hex(&crypto::seal(&key, CHECK_BOUND_TO, CHECK)?),
         hint: hint.trim().to_owned(),
     };
+    Ok((record, key))
+}
+
+/// Sets the library's notes password, once, and returns its key.
+pub fn set_password(db: &mut Db, password: &str, hint: &str) -> Result<Key> {
+    if record(db)?.is_some() {
+        return Err(Error::Forbidden("a notes password is already set"));
+    }
+    let (record, key) = new_record(password, hint)?;
     session::set(db, RECORD_KEY, &serde_json::to_value(record)?)?;
+    Ok(key)
+}
+
+/// Replaces the notes password, given the old one, and returns the new key.
+/// Every locked note, in the trash too, is sealed again with it in the same
+/// step, so no note is ever left behind on the old password.
+pub fn change_password(db: &mut Db, old: &str, new: &str, hint: &str) -> Result<Key> {
+    let old_key = unlock(db, old)?;
+    let (record, key) = new_record(new, hint)?;
+    let record = serde_json::to_value(record)?;
+    db.tx(|tx, _| {
+        let sealed: Vec<(String, Vec<u8>)> = tx
+            .prepare("SELECT id, cipher FROM notes WHERE locked = 1")?
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?
+            .collect::<rusqlite::Result<_>>()?;
+        for (id, cipher) in sealed {
+            let plain = Zeroizing::new(crypto::unseal(&old_key, &id, &cipher)?);
+            tx.execute(
+                "UPDATE notes SET cipher = ?2 WHERE id = ?1",
+                params![id, crypto::seal(&key, &id, &plain)?],
+            )?;
+        }
+        session::set_in(tx, RECORD_KEY, &record)
+    })?;
+    flush(db)?;
     Ok(key)
 }
 
@@ -451,6 +482,61 @@ mod tests {
             remove(&mut t.db, &key, &id),
             Err(Error::InvalidInput(_))
         ));
+    }
+
+    #[test]
+    fn changing_the_password_seals_every_locked_note_with_the_new_key() {
+        let mut t = temp_db();
+        let old = set_password(&mut t.db, "hunter2", "old hint").unwrap();
+        let live = locked_note(&mut t, &old);
+        let trashed = locked_note(&mut t, &old);
+        notes::delete(&mut t.db, &trashed).unwrap();
+        let before = notes::get(&t.db, &live).unwrap().summary.updated_at;
+        t.clock.advance(1000);
+
+        let new = change_password(&mut t.db, "hunter2", "correct horse", " new hint ").unwrap();
+        assert_eq!(
+            password_info(&t.db).unwrap(),
+            Some(PasswordInfo {
+                hint: "new hint".into()
+            })
+        );
+        assert!(matches!(
+            unlock(&t.db, "hunter2"),
+            Err(Error::WrongPassword)
+        ));
+        assert!(unlock(&t.db, "correct horse").is_ok());
+        for id in [&live, &trashed] {
+            assert_eq!(open(&t.db, &new, id).unwrap().doc_json, "{}");
+            assert!(matches!(open(&t.db, &old, id), Err(Error::WrongPassword)));
+        }
+        assert_eq!(
+            notes::get(&t.db, &live).unwrap().summary.updated_at,
+            before,
+            "a new password is not an edit"
+        );
+    }
+
+    #[test]
+    fn changing_the_password_needs_the_old_one_and_a_new_one() {
+        let mut t = temp_db();
+        assert!(matches!(
+            change_password(&mut t.db, "a", "b", ""),
+            Err(Error::NotFound(_))
+        ));
+        let key = set_password(&mut t.db, "hunter2", "hint").unwrap();
+        let id = locked_note(&mut t, &key);
+        assert!(matches!(
+            change_password(&mut t.db, "hunter3", "new", ""),
+            Err(Error::WrongPassword)
+        ));
+        assert!(matches!(
+            change_password(&mut t.db, "hunter2", "  ", ""),
+            Err(Error::InvalidInput(_))
+        ));
+        assert!(unlock(&t.db, "hunter2").is_ok(), "nothing changed");
+        assert_eq!(open(&t.db, &key, &id).unwrap().doc_json, "{}");
+        assert_eq!(password_info(&t.db).unwrap().unwrap().hint, "hint");
     }
 
     #[test]
