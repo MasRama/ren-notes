@@ -59,16 +59,16 @@ export function groupNotes(notes: NoteSummary[], options: GroupOptions): NoteGro
 export function listTime(ms: number, now: number, locale?: string): string {
   const days = daysAgo(ms, now);
   const date = new Date(ms);
-  if (days <= 0) return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  if (days <= 0) return date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
   if (days === 1) return "Yesterday";
   if (days < 7) return date.toLocaleDateString(locale ?? "en-GB", { weekday: "long" });
-  return date.toLocaleDateString(locale, { day: "2-digit", month: "2-digit", year: "numeric" });
+  return date.toLocaleDateString(locale, { day: "numeric", month: "numeric", year: "numeric" });
 }
 
 /** The grey line at the top of the editor: "10 November 2026 at 17:41". */
 export function editorDate(ms: number, locale?: string): string {
   const date = new Date(ms);
   const day = date.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
-  const time = date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  const time = date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
   return `${day} at ${time}`;
 }

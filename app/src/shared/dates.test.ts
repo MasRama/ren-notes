@@ -59,7 +59,7 @@ describe("groupNotes", () => {
 
 describe("listTime", () => {
   it("shows the time today, Yesterday, a weekday this week, else the date", () => {
-    expect(listTime(new Date(2026, 10, 10, 9, 5).getTime(), now, "en-GB")).toBe("09:05");
+    expect(listTime(new Date(2026, 10, 10, 9, 5).getTime(), now, "en-GB")).toBe("9:05");
     expect(listTime(new Date(2026, 10, 9, 9, 5).getTime(), now, "en-GB")).toBe("Yesterday");
     expect(listTime(new Date(2026, 10, 5, 9, 5).getTime(), now, "en-GB")).toBe("Thursday");
     expect(listTime(new Date(2026, 9, 1).getTime(), now, "en-GB")).toBe("01/10/2026");
