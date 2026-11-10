@@ -1,0 +1,42 @@
+name: Bug report
+description: Something in Renotes does not work as described
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Make a checklist in a new note
+        2. Tick the first item
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Renotes version
+      description: Shown by `dpkg -s renotes | grep Version`
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Distribution and desktop
+      description: For example "Ubuntu 24.04, GNOME 46, Wayland".
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: Start `renotes` from a terminal, repeat the steps and paste what it prints. Leave out anything from your notes.
+      render: text

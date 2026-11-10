@@ -1,0 +1,16 @@
+name: Feature request
+description: Something Renotes should do
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What you want to do
+      description: The task you are trying to get done, and where Renotes gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How it could work
+      description: If Notes on the Mac does this, say how it behaves there.
