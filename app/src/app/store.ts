@@ -414,6 +414,20 @@ export class Store {
     await this.refreshLocks();
   }
 
+  /** Replaces the notes password, saving what is typed first; false when
+   * `old` is wrong. Locked notes are open afterwards. */
+  async changeNotesPassword(old: string, password: string, hint: string): Promise<boolean> {
+    await this.beforeLeave?.();
+    try {
+      await this.api.locksChangePassword(old, password, hint);
+    } catch (e) {
+      if (isCoreError(e, "wrong_password")) return false;
+      throw e;
+    }
+    await this.refreshLocks();
+    return true;
+  }
+
   /** Opens locked notes; false when the password is wrong. */
   async openLocked(password: string): Promise<boolean> {
     try {

@@ -282,6 +282,20 @@ describe("Store", () => {
       expect((await mem.notesGet(id)).docJson).toBe('{"secret":true}');
     });
 
+    it("changes the password, saving what was typed first", async () => {
+      const id = await noteWithTag();
+      await store.init();
+      await store.setNotesPassword("hunter2", "");
+      await store.lockNote(id);
+      let flushed = 0;
+      store.beforeLeave = async () => void flushed++;
+      expect(await store.changeNotesPassword("nope", "new", "")).toBe(false);
+      expect(await store.changeNotesPassword("hunter2", "new", "fresh")).toBe(true);
+      expect(flushed).toBe(2);
+      expect(store.state.locks).toEqual({ hasPassword: true, hint: "fresh", open: true });
+      expect((await mem.notesGet(id)).docJson).toBe('{"secret":true}');
+    });
+
     it("closing locked notes saves first and seals them again", async () => {
       const id = await noteWithTag();
       await store.init();

@@ -10,7 +10,7 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-async function show(mode: "create" | "enter", answer: (v: PasswordValues) => string | null) {
+async function show(mode: "create" | "enter" | "change", answer: (v: PasswordValues) => string | null) {
   const seen: PasswordValues[] = [];
   const closed: boolean[] = [];
   passwordSheet.request = {
@@ -51,7 +51,7 @@ describe("PasswordSheet", () => {
     fill(el, "hint", "h");
     submit(el);
     await flush();
-    expect(seen).toEqual([{ password: "a", verify: "b", hint: "h" }]);
+    expect(seen).toEqual([{ old: "", password: "a", verify: "b", hint: "h" }]);
     expect(el.querySelector(".error")?.textContent).toBe("The passwords don’t match.");
   });
 
@@ -62,6 +62,19 @@ describe("PasswordSheet", () => {
     submit(el);
     await flush();
     expect(seen[0].password).toBe("hunter2");
+  });
+
+  it("asks for the old password, the new one twice and a hint when changing it", async () => {
+    const { el, seen } = await show("change", () => null);
+    expect(el.querySelector("h2")?.textContent).toBe("Change the notes password");
+    expect([...el.querySelectorAll("input")].map((i) => i.name)).toEqual(["old", "password", "verify", "hint"]);
+    expect(document.activeElement?.getAttribute("name")).toBe("old");
+    fill(el, "old", "o");
+    fill(el, "password", "n");
+    fill(el, "verify", "n");
+    submit(el);
+    await flush();
+    expect(seen).toEqual([{ old: "o", password: "n", verify: "n", hint: "" }]);
   });
 
   it("closes without opening on Cancel and Escape", async () => {

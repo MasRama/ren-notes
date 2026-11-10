@@ -4,21 +4,30 @@ import Icon from "../../shared/ui/Icon.vue";
 import { passwordSheet } from "./flow";
 
 const request = computed(() => passwordSheet.request);
-const creating = computed(() => request.value?.mode === "create");
+const mode = computed(() => request.value?.mode);
+/** A new password is typed twice, with a hint: creating or changing it. */
+const choosing = computed(() => mode.value === "create" || mode.value === "change");
+const TEXT = {
+  create: { title: "Create a password for locked notes", button: "Set Password" },
+  enter: { title: "Enter the notes password", button: "OK" },
+  change: { title: "Change the notes password", button: "Change Password" },
+};
+const text = computed(() => TEXT[mode.value ?? "enter"]);
 
-const values = reactive({ password: "", verify: "", hint: "" });
+const values = reactive({ old: "", password: "", verify: "", hint: "" });
 const error = ref("");
 const busy = ref(false);
-const first = ref<HTMLInputElement | null>(null);
+const form = ref<HTMLFormElement | null>(null);
+const focusFirst = () => form.value?.querySelector("input")?.focus();
 
 watch(
   request,
   async (now) => {
-    Object.assign(values, { password: "", verify: "", hint: "" });
+    Object.assign(values, { old: "", password: "", verify: "", hint: "" });
     error.value = "";
     if (!now) return;
     await nextTick();
-    first.value?.focus();
+    focusFirst();
   },
   { immediate: true },
 );
@@ -31,10 +40,11 @@ async function submit() {
     const problem = await asked.submit({ ...values });
     if (problem && passwordSheet.request === asked) {
       error.value = problem;
+      values.old = "";
       values.password = "";
       values.verify = "";
       await nextTick();
-      first.value?.focus();
+      focusFirst();
     }
   } finally {
     busy.value = false;
@@ -48,25 +58,34 @@ const cancel = () => request.value?.done(false);
   <Transition name="sheet">
     <div v-if="request" class="scrim" @mousedown.self="cancel">
       <form
+        ref="form"
         class="sheet"
         role="dialog"
         aria-modal="true"
-        :aria-label="creating ? 'Create a password' : 'Enter the notes password'"
+        :aria-label="text.title"
         @submit.prevent="submit"
         @keydown.esc.prevent.stop="cancel"
       >
         <Icon class="mark" name="lock" :size="34" />
-        <h2>{{ creating ? "Create a password for locked notes" : "Enter the notes password" }}</h2>
+        <h2>{{ text.title }}</h2>
         <input
-          ref="first"
-          v-model="values.password"
-          name="password"
+          v-if="mode === 'change'"
+          v-model="values.old"
+          name="old"
           type="password"
-          placeholder="Password"
+          placeholder="Old Password"
           autocomplete="off"
           spellcheck="false"
         />
-        <template v-if="creating">
+        <input
+          v-model="values.password"
+          name="password"
+          type="password"
+          :placeholder="mode === 'change' ? 'New Password' : 'Password'"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <template v-if="choosing">
           <input
             v-model="values.verify"
             name="verify"
@@ -81,7 +100,7 @@ const cancel = () => request.value?.done(false);
         <p v-if="error" class="error" role="alert">{{ error }}</p>
         <div class="buttons">
           <button type="button" class="btn cancel" @click="cancel">Cancel</button>
-          <button type="submit" class="btn primary" :disabled="busy">{{ creating ? "Set Password" : "OK" }}</button>
+          <button type="submit" class="btn primary" :disabled="busy">{{ text.button }}</button>
         </div>
       </form>
     </div>

@@ -21,6 +21,7 @@ export function tauriApi(): Api {
 
     locksState: () => invoke("locks_state"),
     locksSetPassword: (password, hint) => invoke("locks_set_password", { password, hint }),
+    locksChangePassword: (old, password, hint) => invoke("locks_change_password", { old, new: password, hint }),
     locksOpen: (password) => invoke("locks_open", { password }),
     locksClose: () => invoke("locks_close"),
     notesLock: (id) => invoke("notes_lock", { id }),

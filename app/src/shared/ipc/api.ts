@@ -35,6 +35,9 @@ export interface Api {
   locksState(): Promise<LockState>;
   /** Sets the notes password, once; locked notes are open afterwards. */
   locksSetPassword(password: string, hint: string): Promise<void>;
+  /** Replaces the notes password; fails with `wrong_password` when `old` is
+   * not it. Locked notes are open afterwards. */
+  locksChangePassword(old: string, password: string, hint: string): Promise<void>;
   /** Opens locked notes; fails with `wrong_password`. */
   locksOpen(password: string): Promise<void>;
   /** Closes locked notes: their content is sealed until opened again. */

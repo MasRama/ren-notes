@@ -79,6 +79,13 @@ export class MemoryApi implements Api {
     this.password = { word: password, hint: hint.trim() };
     this.locksOpenNow = true;
   }
+  async locksChangePassword(old: string, password: string, hint: string) {
+    if (!this.password) fail("not_found", "password not found");
+    if (old !== this.password.word) fail("wrong_password", "wrong password");
+    if (!password.trim()) fail("invalid_input", "a password is needed");
+    this.password = { word: password, hint: hint.trim() };
+    this.locksOpenNow = true;
+  }
   async locksOpen(password: string) {
     if (!this.password) fail("not_found", "password not found");
     if (password !== this.password.word) fail("wrong_password", "wrong password");

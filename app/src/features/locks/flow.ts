@@ -4,14 +4,17 @@ import type { NoteSummary } from "../../shared/ipc/types";
 import type { MenuItem } from "../../shared/ui/menu";
 
 export interface PasswordValues {
+  /** The password being replaced, when changing it. */
+  old: string;
   password: string;
   verify: string;
   hint: string;
 }
 
-/** The password sheet's one request: create the notes password, or type it. */
+/** The password sheet's one request: create the notes password, type it,
+ * or change it. */
 export interface PasswordRequest {
-  mode: "create" | "enter";
+  mode: "create" | "enter" | "change";
   /** Tries what was typed: an error to show, or null when it worked. */
   submit: (values: PasswordValues) => Promise<string | null>;
   /** Closes the sheet; `ok` says whether locked notes are now open. */
@@ -58,6 +61,16 @@ export function openLockedNotes(store: Store): Promise<boolean> {
   });
 }
 
+/** Asks for the old password and a new one. False when cancelled. */
+export function changePassword(store: Store): Promise<boolean> {
+  return ask("change", async ({ old, password, verify, hint }) => {
+    if (!password) return "Enter a new password.";
+    if (password !== verify) return "The passwords don’t match.";
+    if (await store.changeNotesPassword(old, password, hint)) return null;
+    return "The old password is wrong.";
+  });
+}
+
 export async function lockNote(store: Store, note: NoteSummary): Promise<void> {
   if (await openLockedNotes(store)) await store.lockNote(note.id);
 }
@@ -73,8 +86,10 @@ export function lockMenu(store: Store, note: NoteSummary): MenuItem[] {
       ? { label: "Remove Lock", action: () => void removeLock(store, note) }
       : { label: "Lock Note", action: () => void lockNote(store, note) },
   ];
-  if (store.state.locks.open) {
-    items.push({ separator: true }, { label: "Close All Locked Notes", action: () => void store.closeLocked() });
-  }
+  const { hasPassword, open } = store.state.locks;
+  if (!hasPassword) return items;
+  items.push({ separator: true });
+  if (open) items.push({ label: "Close All Locked Notes", action: () => void store.closeLocked() });
+  items.push({ label: "Change Password…", action: () => void changePassword(store) });
   return items;
 }
