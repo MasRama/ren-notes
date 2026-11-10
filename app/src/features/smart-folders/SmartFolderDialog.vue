@@ -57,7 +57,7 @@ async function save() {
 <template>
   <Transition name="sheet">
     <div v-if="smartDialog.open" class="scrim" @keydown.esc.stop="smartDialog.open = false" @mousedown.self="smartDialog.open = false">
-      <form class="dialog" @submit.prevent="save">
+      <form class="dialog" role="dialog" aria-modal="true" :aria-label="smartDialog.id ? 'Edit Smart Folder' : 'New Smart Folder'" @submit.prevent="save">
         <h2>{{ smartDialog.id ? "Edit Smart Folder" : "New Smart Folder" }}</h2>
         <label class="field">
           <span>Name</span>

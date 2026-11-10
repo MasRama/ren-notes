@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shortcut } from "./keyboard";
+import { inDialog, shortcut } from "./keyboard";
 
 const key = (k: string, mods: Partial<Record<"ctrl" | "shift" | "alt" | "meta", boolean>> = {}) => ({
   key: k,
@@ -25,5 +25,20 @@ describe("shortcut", () => {
     expect(shortcut(key("b", { ctrl: true }))).toBeNull();
     expect(shortcut(key("t", { ctrl: true, shift: true }))).toBeNull();
     expect(shortcut(key("n", { ctrl: true, meta: true }))).toBeNull();
+  });
+});
+
+describe("inDialog", () => {
+  it("tells keys typed in a dialog from keys typed in the panes", () => {
+    document.body.innerHTML = `
+      <form role="dialog"><input id="a" /></form>
+      <div role="alertdialog"><button id="b"></button></div>
+      <div class="list"><input id="c" /></div>`;
+    const at = (id: string) => document.getElementById(id);
+    expect(inDialog(at("a"))).toBe(true);
+    expect(inDialog(at("b"))).toBe(true);
+    expect(inDialog(at("c"))).toBe(false);
+    expect(inDialog(window)).toBe(false);
+    expect(inDialog(null)).toBe(false);
   });
 });

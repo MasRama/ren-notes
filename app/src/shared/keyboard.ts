@@ -35,3 +35,9 @@ export function shortcut(e: KeyLike): Command | null {
   parts.push(e.key.toLowerCase());
   return MAP[parts.join("+")] ?? null;
 }
+
+/** Whether a key was typed inside a dialog or sheet, which keeps its own
+ * keys (Tab moves between its fields, not between the panes). */
+export function inDialog(target: EventTarget | null): boolean {
+  return target instanceof Element && !!target.closest('[role="dialog"], [role="alertdialog"]');
+}

@@ -15,7 +15,7 @@ import NoteList from "../features/note-list/NoteList.vue";
 import Gallery from "../features/note-list/Gallery.vue";
 import EditorPane from "../features/editor/EditorPane.vue";
 import SmartFolderDialog from "../features/smart-folders/SmartFolderDialog.vue";
-import { shortcut } from "../shared/keyboard";
+import { inDialog, shortcut } from "../shared/keyboard";
 
 const store = useStore();
 const s = store.state;
@@ -46,7 +46,7 @@ function toggleSidebar() {
 async function onKey(e: KeyboardEvent) {
   const command = shortcut(e);
   if (!command) {
-    if (e.key === "Tab" && !e.ctrlKey && !e.altKey && s.focus !== "editor") {
+    if (e.key === "Tab" && !e.ctrlKey && !e.altKey && s.focus !== "editor" && !inDialog(e.target)) {
       // Tab moves between the sidebar and the list; the editor keeps Tab.
       e.preventDefault();
       s.focus = s.focus === "sidebar" ? "list" : e.shiftKey && s.sidebarShown ? "sidebar" : "editor";
