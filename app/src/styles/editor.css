@@ -1,5 +1,5 @@
-/* The note document. Sizes follow Notes on the Mac: Title 26, Heading 20,
-   Subheading 16.5, Body 15. */
+/* The note document. Sizes follow Notes on the Mac: Title 28, Heading 21,
+   Subheading 17, Body 15, with the display sizes tracked in as SF is. */
 .rn-doc {
   outline: none;
   font-size: 15px;
@@ -31,17 +31,20 @@
   margin-top: 0;
 }
 .rn-doc h1 {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 750;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.022em;
+  line-height: 1.18;
 }
 .rn-doc h2 {
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
+  letter-spacing: -0.014em;
 }
 .rn-doc h3 {
-  font-size: 16.5px;
+  font-size: 17px;
   font-weight: 650;
+  letter-spacing: -0.006em;
 }
 .rn-doc strong {
   font-weight: 700;
