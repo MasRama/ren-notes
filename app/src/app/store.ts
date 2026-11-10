@@ -106,6 +106,8 @@ export class Store {
   beforeLeave: (() => Promise<void>) | null = null;
   private persistTimer: ReturnType<typeof setTimeout> | null = null;
   private listToken = 0;
+  /** Every live note's title, for links between notes. */
+  private titles = new Map<string, string>();
 
   constructor(
     readonly api: Api,
@@ -133,7 +135,7 @@ export class Store {
   async init(): Promise<void> {
     const saved = (await this.api.sessionGet<Partial<Session>>("ui")) ?? {};
     Object.assign(this.state, DEFAULT_SESSION, saved);
-    await this.refreshSidebar();
+    await Promise.all([this.refreshSidebar(), this.refreshTitles()]);
     if (!this.sourceExists(this.state.source)) {
       this.state.source = NOTES;
       this.state.selectedId = null;
@@ -159,6 +161,16 @@ export class Store {
       this.api.tagsList(),
     ]);
     Object.assign(this.state, { folders, smartFolders, tags });
+  }
+
+  async refreshTitles(): Promise<void> {
+    const all = await this.api.notesList({ kind: "all" }, "title");
+    this.titles = new Map(all.map((n) => [n.id, n.title]));
+  }
+
+  /** A live note's title; undefined once it is deleted. */
+  noteTitle(id: string): string | undefined {
+    return this.titles.get(id);
   }
 
   // ---- the list ---------------------------------------------------------
@@ -288,6 +300,7 @@ export class Store {
     }
     const note = await this.api.notesCreate(folderId);
     const { docJson: _d, docFormat: _f, ...summary } = note;
+    this.titles.set(note.id, note.title);
     const pinned = this.state.notes.filter((n) => n.pinned).length;
     this.state.notes.splice(this.sort === "title" ? 0 : pinned, 0, summary);
     this.state.selectedId = note.id;
@@ -301,6 +314,7 @@ export class Store {
 
   /** The editor saved: show the new title and snippet, and re-sort. */
   noteSaved(summary: NoteSummary): void {
+    if (summary.deletedAt === null) this.titles.set(summary.id, summary.title);
     const notes = this.state.notes;
     const at = notes.findIndex((n) => n.id === summary.id);
     if (at < 0) return;
@@ -330,6 +344,7 @@ export class Store {
     const note = this.state.notes.find((n) => n.id === id);
     if (note?.deletedAt != null) await this.api.trashPurge(id);
     else await this.api.notesDelete(id);
+    this.titles.delete(id);
     this.removeFromList(id);
     this.persist();
     await this.refreshSidebar();
@@ -338,7 +353,7 @@ export class Store {
   async recover(id: string): Promise<void> {
     await this.api.trashRecover(id);
     this.removeFromList(id);
-    await this.refreshSidebar();
+    await Promise.all([this.refreshSidebar(), this.refreshTitles()]);
   }
 
   async emptyTrash(): Promise<void> {
@@ -346,6 +361,20 @@ export class Store {
     this.state.notes = this.state.notes.filter((n) => n.deletedAt === null);
     this.state.selectedId = this.state.notes[0]?.id ?? null;
     await this.refreshSidebar();
+  }
+
+  /** Opens a linked note, showing its folder when the list does not have it. */
+  async openNote(id: string): Promise<void> {
+    if (!this.state.notes.some((n) => n.id === id) || this.inTrash) {
+      const note = await this.api.notesGet(id).catch(() => null);
+      if (!note || note.deletedAt !== null) {
+        this.state.notice = "This note has been deleted.";
+        return;
+      }
+      await this.selectSource({ kind: "folder", id: note.folderId });
+    }
+    await this.select(id);
+    if (this.state.view === "gallery") this.state.galleryOpen = true;
   }
 
   async setPinned(id: string, pinned: boolean): Promise<void> {
@@ -409,7 +438,7 @@ export class Store {
     }
     await this.api.foldersDelete(id);
     const s = this.state.source;
-    await this.refreshSidebar();
+    await Promise.all([this.refreshSidebar(), this.refreshTitles()]);
     if (s.kind === "folder" && ids.has(s.id)) await this.selectSource(NOTES);
     else await this.loadNotes();
   }

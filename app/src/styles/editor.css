@@ -95,12 +95,19 @@
 .rn-doc strong {
   font-weight: 700;
 }
-.rn-doc a {
+.rn-doc a,
+.rn-doc .rn-note-link {
   color: var(--accent-text);
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
   text-underline-offset: 2px;
   cursor: pointer;
+}
+/* A link to a note that has since been deleted. */
+.rn-doc .rn-note-link.missing {
+  color: var(--text-2);
+  text-decoration-color: var(--text-3);
+  text-decoration-style: dashed;
 }
 .rn-doc code {
   font-family: var(--mono);

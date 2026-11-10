@@ -73,4 +73,17 @@ describe("deriveFields", () => {
     expect(fields.snippet).toBe("https://example.com/bare");
     expect(fields.attachmentIds).toEqual(["pic1"]);
   });
+
+  it("reads a note link as the linked note's title", () => {
+    const doc = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "See " }, { type: "noteLink", attrs: { id: "n1", title: "Trip budget" } }],
+        },
+      ],
+    };
+    expect(deriveFields(doc).title).toBe("See Trip budget");
+  });
 });

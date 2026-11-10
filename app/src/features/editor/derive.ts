@@ -16,6 +16,7 @@ const TEXT_BLOCKS = new Set(["paragraph", "heading", "codeBlock"]);
 function inlineText(node: DocNode): string {
   if (node.type === "text") return node.text ?? "";
   if (node.type === "hardBreak") return "\n";
+  if (node.type === "noteLink") return String(node.attrs?.title ?? "");
   return (node.content ?? []).map(inlineText).join("");
 }
 

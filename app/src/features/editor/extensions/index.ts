@@ -11,6 +11,7 @@ import { NoteHighlight } from "./colors";
 import { HeadingFolding } from "./folding";
 import { LinkCard } from "./linkCard";
 import { MathResults } from "./math";
+import { NoteLink, type NoteLinkOptions } from "./noteLink";
 
 export type EditorOptions = NodeOptions &
   ShortcutOptions & {
@@ -18,6 +19,8 @@ export type EditorOptions = NodeOptions &
     sinkChecked?: () => boolean;
     /** Opens a web page in the browser. */
     openLink?: (url: string) => void;
+    /** Links to other notes: their titles, opening them, the `>>` picker. */
+    noteLinks?: Partial<NoteLinkOptions>;
   };
 
 /** The editor's schema and behaviour. Used by the app and by tests. */
@@ -41,6 +44,7 @@ export function noteExtensions(options: EditorOptions): AnyExtension[] {
     NoteHighlight,
     HeadingFolding,
     MathResults,
+    NoteLink.configure(options.noteLinks ?? {}),
     TagHighlight,
     SearchHighlight,
   ];

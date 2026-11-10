@@ -192,4 +192,34 @@ describe("Store", () => {
     await store.persistNow();
     expect(await mem.sessionGet("ui")).toMatchObject({ source: { kind: "trash" }, view: "gallery" });
   });
+
+  it("opens a linked note, going to its folder when the list does not show it", async () => {
+    const folder = await mem.foldersCreate("Trips", null);
+    const target = await noteIn(folder.id, "Trip budget");
+    await noteIn(DEFAULT_FOLDER_ID, "Plan");
+    await store.init();
+    await store.openNote(target);
+    expect(store.state.source).toEqual({ kind: "folder", id: folder.id });
+    expect(store.state.selectedId).toBe(target);
+  });
+
+  it("says so when a linked note has been deleted", async () => {
+    const gone = await noteIn(DEFAULT_FOLDER_ID, "Old plan");
+    const here = await noteIn(DEFAULT_FOLDER_ID, "Plan");
+    await mem.notesDelete(gone);
+    await store.init();
+    await store.openNote(gone);
+    expect(store.state.selectedId).toBe(here);
+    expect(store.state.notice).toBe("This note has been deleted.");
+  });
+
+  it("knows every note's title for links, and keeps it current", async () => {
+    const a = await noteIn(DEFAULT_FOLDER_ID, "Trip");
+    await store.init();
+    expect(store.noteTitle(a)).toBe("Trip");
+    store.noteSaved({ ...store.state.notes[0], title: "Trip budget" });
+    expect(store.noteTitle(a)).toBe("Trip budget");
+    await store.deleteNote(a);
+    expect(store.noteTitle(a)).toBeUndefined();
+  });
 });

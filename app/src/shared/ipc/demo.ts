@@ -112,14 +112,24 @@ export function demoApi(params: URLSearchParams): MemoryApi {
       attachmentIds: fields.attachmentIds,
       deletedFrom: extra.deleted !== undefined ? folderId : null,
     });
+    return id;
   };
 
+  const budget = add(folders.personal.id, 4 * DAY, [
+    h(1, "Trip budget"),
+    p("cabin = 850000"),
+    p("fuel = 2 * 180000"),
+    p("food = 4 * 3 * 45000"),
+    p("Total: cabin + fuel + food ="),
+    p("Each of us pays (cabin + fuel + food) / 4 ="),
+  ]);
   add(DEFAULT_FOLDER_ID, 12 * 60 * 1000, [
     h(1, "Weekend in Lembang"),
     p("Leave Saturday at six to beat the traffic. ", mark("orange", "Book the cabin by Thursday.")),
     { type: "linkCard", attrs: cabin },
     h(2, "Pack"),
     tasks(["Rain jackets", true], ["Thermos and coffee", false], ["Power bank", false], ["Hiking shoes", false]),
+    p("Costs are split four ways in ", { type: "noteLink", attrs: { id: budget, title: "Trip budget" } }, "."),
     p("Sunset from the ridge was the best part last time. #travel"),
     { type: "image", attrs: { attachmentId: photo, alt: "dusk.svg" } },
   ]);
@@ -153,14 +163,6 @@ export function demoApi(params: URLSearchParams): MemoryApi {
     p("Day-old rice is the secret. Shallots, garlic and chilli pounded rough, a spoon of terasi, then high heat."),
     h(3, "Serves two"),
     bullets("2 cups cold rice", "4 shallots, 3 cloves garlic", "2 red chillies", "1 tsp terasi", "Sweet soy to finish"),
-  ]);
-  add(folders.personal.id, 4 * DAY, [
-    h(1, "Trip budget"),
-    p("cabin = 850000"),
-    p("fuel = 2 * 180000"),
-    p("food = 4 * 3 * 45000"),
-    p("Total: cabin + fuel + food ="),
-    p("Each of us pays (cabin + fuel + food) / 4 ="),
   ]);
   add(DEFAULT_FOLDER_ID, 18 * DAY, [h(1, "Wi-Fi at the studio"), p("Network: studio-5g. Ask Dina for the guest code.")]);
   add(folders.personal.id, 70 * DAY, [h(1, "Gift ideas"), p("A good fountain pen for Bapak. Plants for the balcony.")]);

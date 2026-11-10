@@ -3,7 +3,7 @@ import { EditorContent, useEditor } from "@tiptap/vue-3";
 import type { Editor, JSONContent } from "@tiptap/core";
 import { EditorState } from "@tiptap/pm/state";
 import { NodeSelection } from "@tiptap/pm/state";
-import { computed, onBeforeUnmount, watch } from "vue";
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from "vue";
 import { currentEditor, signals, useStore } from "../../app/context";
 import { openLink } from "../../app/window";
 import { editorDate } from "../../shared/dates";
@@ -16,6 +16,8 @@ import { noteExtensions } from "./extensions";
 import { toggleCheckedAt } from "./extensions/checklist";
 import { onlyFolds } from "./extensions/folding";
 import { pastedUrl } from "./extensions/linkCard";
+import type { NoteLinkQuery } from "./extensions/noteLink";
+import NoteLinkPicker from "./NoteLinkPicker.vue";
 
 const props = defineProps<{ findTerms: string[] | null }>();
 const store = useStore();
@@ -24,6 +26,10 @@ const api = store.api;
 
 let noteId: string | null = null;
 let loadToken = 0;
+
+const linkQuery = shallowRef<NoteLinkQuery | null>(null);
+const picker = ref<InstanceType<typeof NoteLinkPicker> | null>(null);
+const shownId = ref<string | null>(null);
 
 // Folding a heading is saved with the note but is not an edit to it.
 let edited = false;
@@ -65,6 +71,12 @@ const editor = useEditor({
     },
     sinkChecked: () => s.sinkChecked,
     openLink: (url) => void openLink(url),
+    noteLinks: {
+      noteTitle: (id) => store.noteTitle(id),
+      openNote: (id) => void store.openNote(id),
+      onQuery: (query) => (linkQuery.value = query),
+      onKey: (event) => picker.value?.onKey(event) ?? false,
+    },
   }),
   editorProps: {
     attributes: { class: "rn-doc", spellcheck: "true" },
@@ -186,6 +198,7 @@ async function open(id: string | null) {
   if (!e) return;
   if (!id) {
     noteId = null;
+    shownId.value = null;
     replaceDoc(e, "");
     e.setEditable(false, false);
     return;
@@ -198,6 +211,7 @@ async function open(id: string | null) {
   }
   if (token !== loadToken || e.isDestroyed) return;
   noteId = id;
+  shownId.value = id;
   if (note.docFormat === "legacy_html") {
     replaceDoc(e, note.docJson);
     // Converted once, quietly: the note keeps its edit time.
@@ -262,6 +276,7 @@ const date = computed(() => {
   <div class="page" @mousedown.self="editor?.commands.focus('end')">
     <p class="date tabular">{{ date }}</p>
     <EditorContent :editor="editor" class="content" />
+    <NoteLinkPicker ref="picker" :editor="editor ?? null" :query="linkQuery" :note-id="shownId" />
   </div>
 </template>
 

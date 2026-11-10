@@ -103,4 +103,26 @@ describe("NoteEditor", () => {
     expect(el.querySelector(".rn-link-card .rn-link-title")?.textContent).toBe("Weekend in Lembang");
     expect(JSON.parse(stored.docJson).content[0]).toMatchObject({ type: "linkCard", attrs: { url } });
   });
+
+  it("offers notes after >> and links the one chosen with the keyboard", async () => {
+    const doc = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "See " }] }] };
+    const { mem, stored, el, store } = await open(JSON.stringify(doc));
+    const other = await mem.notesCreate(DEFAULT_FOLDER_ID);
+    await mem.notesSave(other.id, { docJson: "{}", title: "Trip budget", snippet: "", plainText: "Trip budget", hasChecklist: false, attachmentIds: [] });
+    await store.refreshTitles();
+    const e = currentEditor.value!;
+    e.commands.focus("end");
+    for (const ch of ">>trip") e.commands.insertContent(ch);
+    await wait(100);
+    const items = [...document.querySelectorAll(".rn-link-picker .item")].map((x) => x.textContent?.trim());
+    expect(items).toEqual(["Trip budget"]);
+    e.view.dom.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+    await wait(500);
+    expect(document.querySelector(".rn-link-picker")).toBeNull();
+    expect(el.querySelector(".rn-note-link")?.textContent).toBe("Trip budget");
+    expect(JSON.parse(stored.docJson).content[0].content[1]).toEqual({
+      type: "noteLink",
+      attrs: { id: other.id, title: "Trip budget" },
+    });
+  });
 });
