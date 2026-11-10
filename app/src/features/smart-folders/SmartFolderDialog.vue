@@ -84,22 +84,28 @@ async function save() {
         </div>
         <div v-if="r.tags.length > 1" class="rule">
           <span class="label" />
-          <select v-model="r.tagMatch">
-            <option value="any">Any of these tags</option>
-            <option value="all">All of these tags</option>
-          </select>
+          <span class="popup">
+            <select v-model="r.tagMatch">
+              <option value="any">Any of these tags</option>
+              <option value="all">All of these tags</option>
+            </select>
+          </span>
         </div>
         <div class="rule">
           <span class="label">Edited</span>
-          <select v-model="r.editedWithinDays">
-            <option v-for="p in periods" :key="String(p.value)" :value="p.value">{{ p.label }}</option>
-          </select>
+          <span class="popup">
+            <select v-model="r.editedWithinDays">
+              <option v-for="p in periods" :key="String(p.value)" :value="p.value">{{ p.label }}</option>
+            </select>
+          </span>
         </div>
         <div class="rule">
           <span class="label">Created</span>
-          <select v-model="r.createdWithinDays">
-            <option v-for="p in periods" :key="String(p.value)" :value="p.value">{{ p.label }}</option>
-          </select>
+          <span class="popup">
+            <select v-model="r.createdWithinDays">
+              <option v-for="p in periods" :key="String(p.value)" :value="p.value">{{ p.label }}</option>
+            </select>
+          </span>
         </div>
         <div class="rule">
           <span class="label">Includes</span>
@@ -159,17 +165,19 @@ h2 {
 }
 .field input {
   flex: 1;
-  height: 26px;
+  height: 24px;
   padding: 0 8px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 5px;
   outline: 0;
-  background: var(--editor);
-  box-shadow: inset 0 0 0 0.5px var(--line);
+  background: var(--control);
+  box-shadow: inset 0 0 0 0.5px var(--control-line);
   user-select: text;
 }
 .field input:focus {
-  box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow:
+    inset 0 0 0 0.5px var(--control-line),
+    0 0 0 3px var(--focus-ring);
 }
 .hint {
   margin: 16px 0 8px;
@@ -206,25 +214,69 @@ h2 {
   color: var(--text-3);
   font-size: 12px;
 }
-select {
-  height: 26px;
-  padding: 0 6px;
+/* A Mac pop-up button: the menu's arrows sit in an accent-coloured box. */
+.popup {
+  position: relative;
+  display: inline-flex;
+}
+.popup select {
+  height: 24px;
+  padding: 0 30px 0 9px;
   border: 0;
-  border-radius: 6px;
-  background: var(--editor);
-  box-shadow: inset 0 0 0 0.5px var(--line);
+  border-radius: 5px;
+  outline: 0;
+  appearance: none;
+  background: var(--control);
+  box-shadow: var(--control-edge);
   color: var(--text);
   font: inherit;
+}
+.popup select:focus-visible {
+  box-shadow:
+    var(--control-edge),
+    0 0 0 3px var(--focus-ring);
+}
+.popup::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 12'%3E%3Cpath d='M1.6 4.6 4 2.2l2.4 2.4M1.6 7.4 4 9.8l2.4-2.4' fill='none' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 8px 12px no-repeat;
+  pointer-events: none;
 }
 .checks {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 4px;
+  gap: 7px;
+  padding-top: 5px;
+}
+.checks label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 .checks input {
-  accent-color: var(--accent);
-  margin: 0 6px 0 0;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  border-radius: 4px;
+  outline: 0;
+  appearance: none;
+  background: var(--control);
+  box-shadow: var(--control-edge);
+}
+.checks input:checked {
+  background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='m2 5.2 2 2L8 2.8' fill='none' stroke='white' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 10px no-repeat;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+}
+.checks input:focus-visible {
+  box-shadow:
+    var(--control-edge),
+    0 0 0 3px var(--focus-ring);
 }
 .error {
   color: var(--danger);
@@ -237,16 +289,23 @@ select {
   margin-top: 18px;
 }
 .btn {
-  min-width: 80px;
-  height: 28px;
+  min-width: 76px;
+  height: 24px;
   padding: 0 14px;
-  border-radius: 6px;
-  background: var(--field);
+  border-radius: 5px;
+  background: var(--control);
+  box-shadow: var(--control-edge);
 }
 .btn.primary {
   background: var(--accent);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.25), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
   color: #1d1d1f;
   font-weight: 550;
+}
+.btn:focus-visible {
+  box-shadow:
+    var(--control-edge),
+    0 0 0 3px var(--focus-ring);
 }
 .btn:disabled {
   opacity: 0.45;

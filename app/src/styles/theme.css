@@ -26,6 +26,11 @@
   --tag: #b07f00;
   --chip: rgba(0, 0, 0, 0.06);
   --field: rgba(0, 0, 0, 0.055);
+  /* Buttons, pop-ups, check boxes and text fields in dialogs. */
+  --control: #ffffff;
+  --control-line: rgba(0, 0, 0, 0.2);
+  --control-edge: 0 0 0 0.5px rgba(0, 0, 0, 0.16), 0 0.5px 1.5px rgba(0, 0, 0, 0.14);
+  --focus-ring: rgba(224, 170, 0, 0.45);
   --menu: rgba(246, 246, 246, 0.94);
   --menu-line: rgba(0, 0, 0, 0.1);
   --shadow-pop: 0 0 0 0.5px rgba(0, 0, 0, 0.18), 0 10px 30px rgba(0, 0, 0, 0.16);
@@ -67,6 +72,10 @@
     --tag: #f2c230;
     --chip: rgba(255, 255, 255, 0.08);
     --field: rgba(255, 255, 255, 0.08);
+    --control: rgba(255, 255, 255, 0.11);
+    --control-line: rgba(255, 255, 255, 0.14);
+    --control-edge: inset 0 0.5px 0 rgba(255, 255, 255, 0.1), 0 0 0 0.5px rgba(0, 0, 0, 0.3), 0 0.5px 1.5px rgba(0, 0, 0, 0.3);
+    --focus-ring: rgba(242, 194, 48, 0.45);
     --menu: rgba(44, 44, 46, 0.95);
     --menu-line: rgba(255, 255, 255, 0.12);
     --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 12px 34px rgba(0, 0, 0, 0.5);
@@ -100,6 +109,10 @@
   --tag: #f2c230;
   --chip: rgba(255, 255, 255, 0.08);
   --field: rgba(255, 255, 255, 0.08);
+  --control: rgba(255, 255, 255, 0.11);
+  --control-line: rgba(255, 255, 255, 0.14);
+  --control-edge: inset 0 0.5px 0 rgba(255, 255, 255, 0.1), 0 0 0 0.5px rgba(0, 0, 0, 0.3), 0 0.5px 1.5px rgba(0, 0, 0, 0.3);
+  --focus-ring: rgba(242, 194, 48, 0.45);
   --menu: rgba(44, 44, 46, 0.95);
   --menu-line: rgba(255, 255, 255, 0.12);
   --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 12px 34px rgba(0, 0, 0, 0.5);
