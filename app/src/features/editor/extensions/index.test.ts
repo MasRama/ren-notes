@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { Editor } from "@tiptap/core";
+import { Editor, type JSONContent } from "@tiptap/core";
 import { noteExtensions } from "./index";
 
 const editors: Editor[] = [];
@@ -58,7 +58,7 @@ describe("note schema", () => {
   it("inserts a 3×3 table", () => {
     const { editor } = make("<p></p>");
     editor.commands.insertNoteTable();
-    const table = editor.getJSON().content?.find((n) => n.type === "table");
+    const table = editor.getJSON().content?.find((n) => n.type === "table") as JSONContent | undefined;
     expect(table?.content).toHaveLength(3);
     expect(table?.content?.[0].content).toHaveLength(3);
   });

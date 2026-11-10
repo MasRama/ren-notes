@@ -88,3 +88,49 @@ describe("checklists", () => {
     expect(items(e)).toEqual(["  a", "  b"]);
   });
 });
+
+describe("SinkChecked", () => {
+  async function withSink(enabled: boolean, list: [string, boolean][]) {
+    const { SinkChecked } = await import("./checklist");
+    editor = new Editor({
+      extensions: [StarterKit, TaskList, TaskItem.configure({ nested: true }), SinkChecked.configure({ enabled: () => enabled })],
+      content: {
+        type: "doc",
+        content: [
+          {
+            type: "taskList",
+            content: list.map(([text, checked]) => ({
+              type: "taskItem",
+              attrs: { checked },
+              content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+            })),
+          },
+        ],
+      },
+    });
+    return editor;
+  }
+
+  function checkFirst(e: Editor) {
+    let at = -1;
+    e.state.doc.descendants((node, pos) => {
+      if (at < 0 && node.type.name === "taskItem") at = pos;
+    });
+    const node = e.state.doc.nodeAt(at)!;
+    e.view.dispatch(e.state.tr.setNodeMarkup(at, undefined, { ...node.attrs, checked: true }));
+  }
+
+  it("moves an item checked by a click below the unchecked ones, in one undo step", async () => {
+    const e = await withSink(true, [["milk", false], ["eggs", false], ["done", true]]);
+    checkFirst(e);
+    expect(items(e)).toEqual(["  eggs", "x milk", "x done"]);
+    e.commands.undo();
+    expect(items(e)).toEqual(["  milk", "  eggs", "x done"]);
+  });
+
+  it("leaves the order alone when the setting is off", async () => {
+    const e = await withSink(false, [["milk", false], ["eggs", false]]);
+    checkFirst(e);
+    expect(items(e)).toEqual(["x milk", "  eggs"]);
+  });
+});

@@ -6,8 +6,13 @@ import { AttachmentCard, NoteImage, type NodeOptions } from "./nodes";
 import { NoteBulletList } from "./lists";
 import { NoteShortcuts, type ShortcutOptions } from "./shortcuts";
 import { SearchHighlight, TagHighlight } from "./highlight";
+import { SinkChecked } from "./checklist";
 
-export type EditorOptions = NodeOptions & ShortcutOptions;
+export type EditorOptions = NodeOptions &
+  ShortcutOptions & {
+    /** Whether checked items move to the bottom of their checklist. */
+    sinkChecked?: () => boolean;
+  };
 
 /** The editor's schema and behaviour. Used by the app and by tests. */
 export function noteExtensions(options: EditorOptions): AnyExtension[] {
@@ -25,6 +30,7 @@ export function noteExtensions(options: EditorOptions): AnyExtension[] {
     NoteImage.configure({ attachmentUrl: options.attachmentUrl, openAttachment: options.openAttachment }),
     AttachmentCard.configure({ attachmentUrl: options.attachmentUrl, openAttachment: options.openAttachment }),
     NoteShortcuts.configure({ toggleChecked: options.toggleChecked }),
+    SinkChecked.configure({ enabled: options.sinkChecked ?? (() => true) }),
     TagHighlight,
     SearchHighlight,
   ];

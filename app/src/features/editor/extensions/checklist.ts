@@ -1,5 +1,6 @@
+import { Extension } from "@tiptap/core";
 import { Fragment, type Node as PMNode } from "@tiptap/pm/model";
-import type { Transaction } from "@tiptap/pm/state";
+import { Plugin, PluginKey, type Transaction } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 
 function ancestor(doc: PMNode, pos: number, type: string): { node: PMNode; pos: number } | null {
@@ -49,3 +50,37 @@ export function toggleCheckedAt(view: EditorView, pos: number, sort: boolean): b
   view.dispatch(tr);
   return true;
 }
+
+/** Checked items sink below the unchecked ones however they got checked
+ * (a click on the box, a shortcut), in the same undo step. */
+export const SinkChecked = Extension.create<{ enabled: () => boolean }>({
+  name: "sinkChecked",
+  addOptions() {
+    return { enabled: () => true };
+  },
+  addProseMirrorPlugins() {
+    const enabled = () => this.options.enabled();
+    return [
+      new Plugin({
+        key: new PluginKey("sinkChecked"),
+        appendTransaction(transactions, oldState, newState) {
+          if (!enabled() || !transactions.some((t) => t.docChanged)) return null;
+          const back = transactions.map((t) => t.mapping);
+          const justChecked: number[] = [];
+          newState.doc.descendants((node, pos) => {
+            if (node.type.name !== "taskItem" || !node.attrs.checked) return;
+            let old = pos;
+            for (let i = back.length - 1; i >= 0; i--) old = back[i].invert().map(old, 1);
+            const before = oldState.doc.nodeAt(old);
+            if (before?.type.name === "taskItem" && !before.attrs.checked) justChecked.push(pos);
+          });
+          if (!justChecked.length) return null;
+          const tr = newState.tr;
+          // Last first, so earlier positions stay valid.
+          for (const pos of justChecked.reverse()) sortInTr(tr, tr.mapping.map(pos) + 1);
+          return tr.docChanged ? tr : null;
+        },
+      }),
+    ];
+  },
+});
