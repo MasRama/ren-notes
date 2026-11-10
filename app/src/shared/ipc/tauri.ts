@@ -46,6 +46,7 @@ export function tauriApi(): Api {
     sessionSet: (key, value) => invoke("session_set", { key, value }),
 
     importOld: () => invoke("import_old"),
+    linkPreview: (url) => invoke("link_preview", { url }),
     desktopTint: () => invoke("desktop_tint"),
   };
 }

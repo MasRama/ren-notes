@@ -83,6 +83,14 @@ export interface Attachment {
   height: number | null;
 }
 
+/** A web page as a link card shows it; the picture is an attachment. */
+export interface LinkPreview {
+  url: string;
+  title: string | null;
+  site: string;
+  imageId: string | null;
+}
+
 export interface ImportReport {
   folders: number;
   notes: number;

@@ -38,6 +38,19 @@ function picture(): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
+/** A second picture, for the demo's link card: pines on a hill. */
+function pines(): string {
+  const tree = (x: number, y: number, s: number) =>
+    `<path d="M${x} ${y - 120 * s} L${x + 46 * s} ${y} H${x - 46 * s}Z" fill="#1f4d3a"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs><linearGradient id="k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe3d4"/><stop offset="1" stop-color="#8fbf9f"/></linearGradient></defs>
+<rect width="1200" height="630" fill="url(#k)"/>
+<path d="M0 470 C300 400 700 430 1200 380 V630 H0Z" fill="#3f7a5a"/>
+${[120, 260, 420, 820, 980, 1110].map((x, i) => tree(x, 470 - (i % 3) * 18, 1 + (i % 2) * 0.35)).join("")}
+<path d="M560 470 l90-70 l90 70 v80 h-180z" fill="#7a4b32"/><rect x="630" y="500" width="40" height="50" fill="#f2c46b"/></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 /** The in-memory API filled with believable notes, for the page in a plain
  * browser and for screenshots. `?theme=dark`, `?view=gallery`,
  * `?sidebar=0`, `?empty=1`. */
@@ -60,6 +73,20 @@ export function demoApi(params: URLSearchParams): MemoryApi {
   };
   api.folders.push(...Object.values(folders));
   const photo = api.addPictureUrl(picture(), "dusk.svg", 960, 640);
+  const cabin = {
+    url: "https://example.com/stays/pine-ridge-cabin",
+    title: "Pine Ridge Cabin, Lembang",
+    site: "example.com",
+    imageId: api.addPictureUrl(pines(), "link-preview.jpg", 1200, 630),
+  };
+  const book = {
+    url: "https://en.wikipedia.org/wiki/A_Pattern_Language",
+    title: "A Pattern Language - Wikipedia",
+    site: "Wikipedia",
+    imageId: null,
+  };
+  // Pasting either address in the demo makes its card.
+  for (const preview of [cabin, book]) api.previews.set(preview.url, preview);
 
   const add = (folderId: string, ago: number, content: JSONContent[], extra: { pinned?: boolean; deleted?: number } = {}) => {
     const doc = { type: "doc", content };
@@ -90,6 +117,7 @@ export function demoApi(params: URLSearchParams): MemoryApi {
   add(DEFAULT_FOLDER_ID, 12 * 60 * 1000, [
     h(1, "Weekend in Lembang"),
     p("Leave Saturday at six to beat the traffic. ", mark("orange", "Book the cabin by Thursday.")),
+    { type: "linkCard", attrs: cabin },
     h(2, "Pack"),
     tasks(["Rain jackets", true], ["Thermos and coffee", false], ["Power bank", false], ["Hiking shoes", false]),
     p("Sunset from the ridge was the best part last time. #travel"),
@@ -118,6 +146,7 @@ export function demoApi(params: URLSearchParams): MemoryApi {
   add(folders.personal.id, 5 * DAY, [
     h(1, "Books to read"),
     bullets("The Remains of the Day", "A Pattern Language", "The Design of Everyday Things"),
+    { type: "linkCard", attrs: book },
   ]);
   add(folders.recipes.id, 12 * DAY, [
     h(1, "Nasi goreng kampung"),

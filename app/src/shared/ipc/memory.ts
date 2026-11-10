@@ -4,6 +4,7 @@ import {
   DEFAULT_FOLDER_ID,
   type Attachment,
   type Folder,
+  type LinkPreview,
   type Note,
   type NoteFilter,
   type NoteSort,
@@ -337,6 +338,12 @@ export class MemoryApi implements Api {
 
   async importOld() {
     return null;
+  }
+
+  /** What linkPreview() answers, by address; the demo fills it. */
+  previews = new Map<string, LinkPreview>();
+  async linkPreview(url: string) {
+    return this.previews.get(url) ?? null;
   }
 
   async desktopTint() {

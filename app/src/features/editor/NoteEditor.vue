@@ -15,6 +15,7 @@ import { insertFiles } from "./files";
 import { noteExtensions } from "./extensions";
 import { toggleCheckedAt } from "./extensions/checklist";
 import { onlyFolds } from "./extensions/folding";
+import { pastedUrl } from "./extensions/linkCard";
 
 const props = defineProps<{ findTerms: string[] | null }>();
 const store = useStore();
@@ -63,14 +64,24 @@ const editor = useEditor({
       return !!e && toggleCheckedAt(e.view, e.state.selection.from, false);
     },
     sinkChecked: () => s.sinkChecked,
+    openLink: (url) => void openLink(url),
   }),
   editorProps: {
     attributes: { class: "rn-doc", spellcheck: "true" },
-    handlePaste(_view, event) {
+    handlePaste(view, event) {
       const files = [...(event.clipboardData?.files ?? [])];
-      if (!files.length || !editor.value?.isEditable) return false;
-      void insertFiles(editor.value, api, files, null);
-      return true;
+      if (files.length && editor.value?.isEditable) {
+        void insertFiles(editor.value, api, files, null);
+        return true;
+      }
+      // An address pasted on a line of its own goes in as a link, then
+      // becomes a card once the page has been read, as on the Mac.
+      const url = pastedUrl(event.clipboardData?.getData("text/plain") ?? "");
+      const { $from, empty } = view.state.selection;
+      if (url && empty && $from.depth === 1 && $from.parent.type.name === "paragraph" && !$from.parent.content.size) {
+        void showPreview(url);
+      }
+      return false;
     },
     handleDrop(view, event, _slice, moved) {
       const files = [...(event.dataTransfer?.files ?? [])];
@@ -87,6 +98,22 @@ const editor = useEditor({
     },
     handleDOMEvents: {
       contextmenu(view, event) {
+        const card = (event.target as HTMLElement).closest(".rn-link-card");
+        if (card && editor.value) {
+          event.preventDefault();
+          const pos = view.posAtDOM(card, 0);
+          view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, pos)));
+          const e = editor.value;
+          const url = e.state.doc.nodeAt(pos)?.attrs.url as string;
+          openMenu(event, [
+            { label: "Open Link", action: () => void openLink(url) },
+            { label: "Copy Link", action: () => void navigator.clipboard.writeText(url) },
+            { label: "Show as Link", action: () => e.chain().focus().showAsLink(pos).run() },
+            { separator: true },
+            { label: "Delete", danger: true, action: () => e.chain().focus().deleteSelection().run() },
+          ]);
+          return true;
+        }
         const img = (event.target as HTMLElement).closest("img.rn-image");
         if (!img || !editor.value) return false;
         event.preventDefault();
@@ -113,6 +140,13 @@ const editor = useEditor({
   onFocus: () => (s.focus = "editor"),
   onBlur: () => void autosave.flush(),
 });
+
+async function showPreview(url: string) {
+  const token = loadToken;
+  const preview = await api.linkPreview(url).catch(() => null);
+  // Still the same note: the card belongs to the line the address went on.
+  if (preview && token === loadToken) editor.value?.commands.showLinkPreview(preview);
+}
 
 /** A fresh document with its own undo history. */
 function replaceDoc(e: Editor, content: JSONContent | string) {

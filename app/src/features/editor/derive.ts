@@ -30,8 +30,19 @@ export function deriveFields(doc: DocNode): DerivedFields {
   const walk = (node: DocNode) => {
     if (node.type === "taskItem") hasChecklist = true;
     const id =
-      node.type === "image" ? node.attrs?.attachmentId : node.type === "attachment" ? node.attrs?.id : null;
+      node.type === "image"
+        ? node.attrs?.attachmentId
+        : node.type === "attachment"
+          ? node.attrs?.id
+          : node.type === "linkCard"
+            ? node.attrs?.imageId
+            : null;
     if (typeof id === "string" && id && !attachmentIds.includes(id)) attachmentIds.push(id);
+    if (node.type === "linkCard") {
+      // A card reads as its title, or its address when the page had none.
+      blocks.push(String(node.attrs?.title || node.attrs?.url || ""));
+      return;
+    }
     if (TEXT_BLOCKS.has(node.type)) {
       blocks.push(inlineText(node));
       return;

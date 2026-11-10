@@ -2,6 +2,7 @@ import type {
   Attachment,
   Folder,
   ImportReport,
+  LinkPreview,
   Note,
   NoteFilter,
   NoteSort,
@@ -53,6 +54,9 @@ export interface Api {
   sessionSet(key: string, value: unknown): Promise<void>;
 
   importOld(): Promise<ImportReport | null>;
+
+  /** A web page's title, site and picture, or null when it cannot be read. */
+  linkPreview(url: string): Promise<LinkPreview | null>;
 
   /** The wallpaper's average colour (`#rrggbb`), or null when unknown. */
   desktopTint(): Promise<string | null>;

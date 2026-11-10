@@ -58,4 +58,19 @@ describe("deriveFields", () => {
       attachmentIds: [],
     });
   });
+
+  it("reads a link card as its title, keeping its picture", () => {
+    const card = (attrs: Record<string, unknown>) => ({ type: "linkCard", attrs });
+    const doc = {
+      type: "doc",
+      content: [
+        card({ url: "https://example.com/trip", title: "Weekend in Lembang", site: "Example", imageId: "pic1" }),
+        card({ url: "https://example.com/bare", title: null, site: "example.com", imageId: null }),
+      ],
+    };
+    const fields = deriveFields(doc);
+    expect(fields.title).toBe("Weekend in Lembang");
+    expect(fields.snippet).toBe("https://example.com/bare");
+    expect(fields.attachmentIds).toEqual(["pic1"]);
+  });
 });

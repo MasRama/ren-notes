@@ -86,4 +86,21 @@ describe("NoteEditor", () => {
     expect(JSON.parse(stored.docJson).content[0].attrs.collapsed).toBe(true);
     expect(stored.updatedAt).toBe(1000);
   });
+
+  it("turns an address pasted on an empty line into a link card", async () => {
+    const url = "https://example.com/trip";
+    const doc = { type: "doc", content: [{ type: "paragraph" }] };
+    const { mem, stored, el } = await open(JSON.stringify(doc));
+    mem.previews.set(url, { url, title: "Weekend in Lembang", site: "Example", imageId: null });
+    const view = currentEditor.value!.view;
+    view.focus();
+    const clipboardData = new DataTransfer();
+    clipboardData.setData("text/plain", url);
+    const paste = new Event("paste", { bubbles: true, cancelable: true });
+    Object.defineProperty(paste, "clipboardData", { value: clipboardData });
+    view.dom.dispatchEvent(paste);
+    await wait(500);
+    expect(el.querySelector(".rn-link-card .rn-link-title")?.textContent).toBe("Weekend in Lembang");
+    expect(JSON.parse(stored.docJson).content[0]).toMatchObject({ type: "linkCard", attrs: { url } });
+  });
 });
