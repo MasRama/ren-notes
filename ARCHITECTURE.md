@@ -15,8 +15,10 @@ Vue page (app/src) ──Tauri commands──▶ renotes-app (app/src-tauri) ─
 - **`renotes-core`** owns all logic and all I/O: the SQLite library, search,
   attachments on disk, tags, the trash, importing. It has no Tauri
   dependency, so every feature is tested on its own.
-- **`renotes-app`** is the window, the menu and thin commands that call the
-  core. No logic of its own.
+- **`renotes-app`** is the window, thin commands that call the core, and
+  the `renotes://` protocol that serves attachments and thumbnails. No
+  logic of its own. There is no native menu bar: menus and shortcuts live
+  in the page, as they do in the Mac toolbar.
 - **The page** only draws, edits and animates. It never touches the disk.
 
 ## Repository layout
@@ -26,10 +28,29 @@ small public boundary, private internals, and a thin composition layer.
 
 ```
 core/src/app/        composition: the Library that opens the data dir
-core/src/features/   folders, notes, tags, session
+core/src/features/   folders, notes, tags, trash, search, smart_folders,
+                     attachments, import, session
 core/src/shared/     database and migrations, clock, ids, errors, paths
 core/tests/          integration tests
+
+app/src-tauri/src/   commands/ (one file per area), protocol.rs, main.rs
+app/src/app/         the window shell, the Store, shared context
+app/src/features/    sidebar, note-list, editor, smart-folders
+app/src/shared/      ipc (Tauri client, in-memory API, demo data), ui,
+                     dates, tags, keyboard, icons
 ```
+
+### The page
+
+- The **Store** (`app/src/app/store.ts`) owns what the window shows: the
+  source (folder, smart folder, tags, Recently Deleted), the list, the
+  selection and the session. It is the only part that calls the API;
+  components read its state and call its methods.
+- The **editor** is Tiptap. Opening a note never saves it; edits save
+  through `Autosave` (debounced, flushed before leaving a note or closing
+  the window).
+- `shared/ipc/api.ts` is the boundary: `tauri.ts` talks to the app,
+  `memory.ts` is an in-memory library for tests and the browser demo.
 
 ### Feature rules
 
