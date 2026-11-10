@@ -2,6 +2,8 @@
 
 pub mod folders;
 pub mod notes;
+pub mod search;
 pub mod session;
+pub mod smart_folders;
 pub mod tags;
 pub mod trash;
