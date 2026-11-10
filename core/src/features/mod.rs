@@ -2,4 +2,5 @@
 
 pub mod folders;
 pub mod notes;
+pub mod session;
 pub mod tags;

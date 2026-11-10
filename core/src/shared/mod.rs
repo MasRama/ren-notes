@@ -5,5 +5,6 @@ pub mod db;
 pub mod error;
 pub mod ids;
 mod migrations;
+pub mod paths;
 #[cfg(test)]
 pub mod testing;

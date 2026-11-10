@@ -26,7 +26,7 @@ small public boundary, private internals, and a thin composition layer.
 
 ```
 core/src/app/        composition: the Library that opens the data dir
-core/src/features/   one folder per feature
+core/src/features/   folders, notes, tags, session
 core/src/shared/     database and migrations, clock, ids, errors, paths
 core/tests/          integration tests
 ```
@@ -44,3 +44,31 @@ The library lives in `$XDG_DATA_HOME/ren-notes` (by default
 `~/.local/share/ren-notes`): `library.sqlite` in WAL mode with foreign keys
 on, `attachments/` and `thumbs/`. Ids are lowercase ULIDs and times are Unix
 milliseconds.
+
+### The core's features
+
+- **folders**: a tree under the built-in Notes folder (id `notes`), which
+  cannot be moved or deleted. Sibling names are unique without regard to
+  case. Deleting a folder sends the notes of its whole subtree to Recently
+  Deleted.
+- **notes**: a note stores the editor's JSON document (`doc_format`
+  `tiptap`; notes imported from the old app start as `legacy_html` and are
+  converted when first opened). The page derives title, snippet, plain text
+  and checklist state from the document on every save; the core caps them,
+  reads `#tags` from the plain text and links only attachments it knows.
+  Deleting sets `deleted_at` and remembers the folder. Pinning is not an
+  edit and leaves the edit time alone.
+- **tags**: `parse_tags` reads `#tags` (a letter required, lowercased).
+- **session**: JSON values in the `kv` table that bring the app back to
+  where it was.
+
+### Schema
+
+One migration per schema version, counted by `PRAGMA user_version`. The
+`notes_fts` FTS5 table indexes title and plain text and is kept in sync by
+triggers; nothing writes to it directly.
+
+### Tests
+
+Each feature tests itself against a real database in a temp dir, with a
+`FixedClock` so times are exact (`shared::testing`).

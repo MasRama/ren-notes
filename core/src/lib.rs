@@ -1,6 +1,7 @@
 //! Storage and logic for Renotes. The app only draws; everything that touches
 //! the disk lives here.
 
+pub mod app;
 pub mod features;
 pub mod shared;
 
