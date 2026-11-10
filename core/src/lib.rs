@@ -1,6 +1,8 @@
 //! Storage and logic for Renotes. The app only draws; everything that touches
 //! the disk lives here.
 
+pub mod shared;
+
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg(test)]
