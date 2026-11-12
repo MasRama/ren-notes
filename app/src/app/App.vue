@@ -16,7 +16,7 @@ import NoteList from "../features/note-list/NoteList.vue";
 import Gallery from "../features/note-list/Gallery.vue";
 import EditorPane from "../features/editor/EditorPane.vue";
 import SmartFolderDialog from "../features/smart-folders/SmartFolderDialog.vue";
-import { inDialog, shortcut } from "../shared/keyboard";
+import { browserKey, inDialog, shortcut } from "../shared/keyboard";
 
 const store = useStore();
 const s = store.state;
@@ -45,6 +45,10 @@ function toggleSidebar() {
 }
 
 async function onKey(e: KeyboardEvent) {
+  if (browserKey(e)) {
+    e.preventDefault();
+    return;
+  }
   const command = shortcut(e);
   if (!command) {
     if (e.key === "Tab" && !e.ctrlKey && !e.altKey && s.focus !== "editor" && !inDialog(e.target)) {

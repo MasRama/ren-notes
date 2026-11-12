@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inDialog, shortcut } from "./keyboard";
+import { browserKey, inDialog, shortcut } from "./keyboard";
 
 const key = (k: string, mods: Partial<Record<"ctrl" | "shift" | "alt" | "meta", boolean>> = {}) => ({
   key: k,
@@ -25,6 +25,26 @@ describe("shortcut", () => {
     expect(shortcut(key("b", { ctrl: true }))).toBeNull();
     expect(shortcut(key("t", { ctrl: true, shift: true }))).toBeNull();
     expect(shortcut(key("n", { ctrl: true, meta: true }))).toBeNull();
+  });
+
+  it("lets AltGr type, though Windows reports it as Ctrl+Alt", () => {
+    const altGr = { ...key("s", { ctrl: true, alt: true }), getModifierState: (m: string) => m === "AltGraph" };
+    expect(shortcut(altGr)).toBeNull();
+  });
+});
+
+describe("browserKey", () => {
+  it("catches reload and print", () => {
+    expect(browserKey(key("F5"))).toBe(true);
+    expect(browserKey(key("r", { ctrl: true }))).toBe(true);
+    expect(browserKey(key("R", { ctrl: true, shift: true }))).toBe(true);
+    expect(browserKey(key("p", { ctrl: true }))).toBe(true);
+  });
+
+  it("leaves typing alone", () => {
+    expect(browserKey(key("r"))).toBe(false);
+    expect(browserKey(key("p", { shift: true }))).toBe(false);
+    expect(browserKey(key("r", { ctrl: true, alt: true }))).toBe(false);
   });
 });
 

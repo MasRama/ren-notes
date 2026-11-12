@@ -14,6 +14,7 @@ export interface KeyLike {
   shiftKey: boolean;
   altKey: boolean;
   metaKey: boolean;
+  getModifierState?(key: string): boolean;
 }
 
 const MAP: Record<string, Command> = {
@@ -26,14 +27,23 @@ const MAP: Record<string, Command> = {
   "ctrl+2": "galleryView",
 };
 
-/** The command for a key press, with Ctrl in place of the Mac's Cmd. */
+/** The command for a key press, with Ctrl in place of the Mac's Cmd. AltGr,
+ * which Windows reports as Ctrl+Alt, types a letter and is never one. */
 export function shortcut(e: KeyLike): Command | null {
-  if (!e.ctrlKey || e.metaKey) return null;
+  if (!e.ctrlKey || e.metaKey || e.getModifierState?.("AltGraph")) return null;
   const parts = ["ctrl"];
   if (e.altKey) parts.push("alt");
   if (e.shiftKey) parts.push("shift");
   parts.push(e.key.toLowerCase());
   return MAP[parts.join("+")] ?? null;
+}
+
+/** Keys that would reload or print the page, as in a browser. They mean
+ * nothing in a notes window, and a reload would drop unsaved typing. */
+export function browserKey(e: KeyLike): boolean {
+  const k = e.key.toLowerCase();
+  if (k === "f5" || k === "browserrefresh") return true;
+  return e.ctrlKey && !e.altKey && (k === "r" || k === "p");
 }
 
 /** Whether a key was typed inside a dialog or sheet, which keeps its own
