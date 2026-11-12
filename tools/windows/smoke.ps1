@@ -39,6 +39,21 @@ $script:exe = $found.FullName
 
 Start-Renotes
 Shot 'first-start'
+# The default 1180x760 window is taller than the runner's screen; it must
+# shrink to fit above the taskbar.
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -Namespace Win32 -Name Bounds -MemberDefinition @'
+public struct RECT { public int Left, Top, Right, Bottom; }
+[DllImport("user32.dll")] public static extern bool GetWindowRect(System.IntPtr hWnd, out RECT rect);
+'@
+$handle = (Get-Process -Name renotes | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1).MainWindowHandle
+$bounds = New-Object Win32.Bounds+RECT
+[Win32.Bounds]::GetWindowRect($handle, [ref]$bounds) | Out-Null
+$work = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+Write-Output "window $($bounds.Left),$($bounds.Top)-$($bounds.Right),$($bounds.Bottom) in $work"
+if ($bounds.Left -lt $work.Left -or $bounds.Top -lt $work.Top -or $bounds.Right -gt $work.Right -or $bounds.Bottom -gt $work.Bottom) {
+    throw 'the window does not fit the screen'
+}
 if (-not (Test-Path "$env:APPDATA\Renotes\library.sqlite")) { throw 'no library in %APPDATA%\Renotes' }
 
 # A second start hands over to the window already open.
