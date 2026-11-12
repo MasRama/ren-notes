@@ -94,7 +94,51 @@ fn fetch(url: &Url, limit: usize) -> Option<(Url, String, Vec<u8>)> {
     Some((last, kind, body))
 }
 
-#[cfg(not(target_os = "linux"))]
+/// GETs `url` with ureq over Windows' own TLS, as the Linux version does
+/// with libsoup: the final
+/// URL after redirects, the content type and at most `limit` bytes of the
+/// body. Successful responses only.
+#[cfg(windows)]
+fn fetch(url: &Url, limit: usize) -> Option<(Url, String, Vec<u8>)> {
+    use std::io::Read;
+    use std::time::Duration;
+    use ureq::tls::{RootCerts, TlsConfig, TlsProvider};
+    use ureq::ResponseExt;
+
+    if !matches!(url.scheme(), "http" | "https") {
+        return None;
+    }
+    let agent: ureq::Agent = ureq::Agent::config_builder()
+        .timeout_global(Some(Duration::from_secs(TIMEOUT.into())))
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) Renotes")
+        .tls_config(
+            TlsConfig::builder()
+                .provider(TlsProvider::NativeTls)
+                .root_certs(RootCerts::PlatformVerifier)
+                .build(),
+        )
+        .build()
+        .into();
+    // Statuses outside 2xx are errors here, so they end in `None`.
+    let mut response = agent.get(url.as_str()).call().ok()?;
+    let kind = response
+        .headers()
+        .get("Content-Type")
+        .and_then(|k| k.to_str().ok())
+        .unwrap_or_default()
+        .to_owned();
+    let last = Url::parse(&response.get_uri().to_string()).unwrap_or_else(|_| url.clone());
+    let mut body = Vec::new();
+    response
+        .body_mut()
+        .as_reader()
+        .take(limit as u64)
+        .read_to_end(&mut body)
+        .ok()?;
+    Some((last, kind, body))
+}
+
+#[cfg(not(any(target_os = "linux", windows)))]
 fn fetch(_url: &Url, _limit: usize) -> Option<(Url, String, Vec<u8>)> {
     None
 }
