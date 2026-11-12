@@ -18,11 +18,16 @@ You need:
 
 - Rust (`rustup` picks the toolchain from `rust-toolchain.toml`)
 - Node.js 22.13 or newer
-- The WebKitGTK and GTK development packages Tauri needs. On Ubuntu 24.04:
+- On Linux, the WebKitGTK and GTK development packages Tauri needs. On
+  Ubuntu 24.04:
 
   ```sh
   sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev
   ```
+
+On Windows you need the Visual Studio C++ build tools and WebView2, which
+Windows 10 and 11 already have; see
+[Tauri's prerequisites](https://tauri.app/start/prerequisites/).
 
 ```sh
 cargo test --workspace
@@ -35,7 +40,8 @@ npm run tauri dev
 
 `npm run dev` alone serves the page in a browser on demo data, which is the
 quickest way to work on the interface. `?theme=dark`, `?view=gallery`,
-`?sidebar=0` and `?empty=1` pick a starting state.
+`?sidebar=0` and `?empty=1` pick a starting state, and `?platform=windows`
+draws Windows' window buttons.
 
 To try the app without touching your own notes, point it at another data
 folder: `XDG_DATA_HOME=/tmp/renotes-try npm run tauri dev`.
@@ -88,7 +94,8 @@ Releases are automated with
 [release-please](https://github.com/googleapis/release-please). It keeps a
 release pull request open that collects the changes on `main`. When a
 maintainer merges it, it tags the version, writes `CHANGELOG.md`, and CI
-builds the `.deb` and attaches it to the GitHub release. Version numbers
+builds the `.deb` and the Windows installer and attaches them to the GitHub
+release. Version numbers
 follow [SemVer](https://semver.org/).
 
 ## Code of conduct
