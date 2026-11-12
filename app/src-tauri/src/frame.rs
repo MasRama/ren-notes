@@ -8,10 +8,7 @@ use gtk::glib::Propagation;
 use gtk::prelude::*;
 use tauri::{Emitter, WebviewWindow};
 
-/// Sent to the page with `true` or `false` as the window gains or loses
-/// focus, from the same state that dims the frame's shadow. tao's own focus
-/// events need keyboard focus, which a window can lack while still active.
-pub const ACTIVE_EVENT: &str = "renotes:active";
+use crate::ACTIVE_EVENT;
 
 /// Applied to Renotes' own windows only (the `renotes-frame` class).
 const CSS: &str = "
@@ -72,6 +69,8 @@ pub fn apply(window: &WebviewWindow) {
     gtk_window.set_titlebar(Some(&gtk::EventBox::new()));
     gtk_window.set_decorated(true);
 
+    // From the same state that dims the frame's shadow: tao's own focus
+    // events need keyboard focus, which a window can lack while active.
     let page = window.clone();
     gtk_window.connect_window_state_event(move |_, event| {
         if event.changed_mask().contains(WindowState::FOCUSED) {

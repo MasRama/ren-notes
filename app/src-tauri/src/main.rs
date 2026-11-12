@@ -17,12 +17,18 @@ use renotes_core::app::Library;
 use renotes_core::features::{attachments, import, session, trash};
 use renotes_core::shared::paths::data_dir;
 use tauri::http::{Response, StatusCode};
+#[cfg(not(target_os = "linux"))]
+use tauri::Emitter;
 #[cfg(not(debug_assertions))]
 use tauri::WebviewWindow;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_window_state::StateFlags;
 
 use commands::AppState;
+
+/// Sent to the page with `true` or `false` as the window gains or loses
+/// focus, so it dims as the rest of the desktop does.
+pub const ACTIVE_EVENT: &str = "renotes:active";
 
 /// Housekeeping done at start and then every hour.
 const HOUSEKEEPING_EVERY: Duration = Duration::from_secs(60 * 60);
@@ -43,8 +49,7 @@ fn main() {
     builder
         .plugin(
             tauri_plugin_window_state::Builder::default()
-                // The size is kept by window_size.rs instead.
-                .with_state_flags(StateFlags::all() - StateFlags::SIZE)
+                .with_state_flags(window_state_flags())
                 .build(),
         )
         .plugin(tauri_plugin_opener::init())
@@ -72,10 +77,14 @@ fn main() {
                 responder.respond(response);
             });
         })
-        .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { .. } = event {
-                remember_size(window.app_handle());
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::CloseRequested { .. } => remember_size(window.app_handle()),
+            // On Linux the frame sends it, from GTK's own state.
+            #[cfg(not(target_os = "linux"))]
+            tauri::WindowEvent::Focused(active) => {
+                let _ = window.emit(ACTIVE_EVENT, *active);
             }
+            _ => {}
         })
         .setup(|app| {
             #[cfg(target_os = "linux")]
@@ -166,6 +175,16 @@ fn show(window: &WebviewWindow) {
     let _ = window.unminimize();
     let _ = window.show();
     let _ = window.set_focus();
+}
+
+/// What the window-state plugin brings back. On Linux the size is kept by
+/// window_size.rs instead, as the plugin gets it wrong with GTK's frame.
+fn window_state_flags() -> StateFlags {
+    if cfg!(target_os = "linux") {
+        StateFlags::all() - StateFlags::SIZE
+    } else {
+        StateFlags::all()
+    }
 }
 
 /// Keeps the window's size for the next start; a maximized window keeps the
