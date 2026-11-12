@@ -6,3 +6,4 @@ dist/
 /docs/plans
 /.superpowers
 /app/src-tauri/gen
+/shots
