@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0](https://github.com/MasRama/ren-notes/compare/v0.3.0...v0.4.0) (2026-11-12)
+
+
+### Features
+
+* **app:** dim with focus and remember the window's size on Windows ([bcf23aa](https://github.com/MasRama/ren-notes/commit/bcf23aafd5e6a621280cd648c6cee68be2d03f75))
+* **app:** fit the window to the screen on Windows ([22325ee](https://github.com/MasRama/ren-notes/commit/22325eea74eda590a2ef091eabcb30c1682286db))
+* **app:** link cards and the wallpaper tint on Windows ([875d3ec](https://github.com/MasRama/ren-notes/commit/875d3ec721128c06e98743cf8665dc8b0dae4486))
+* **app:** serve pictures and files to WebView2 at http://renotes.localhost ([e8a7349](https://github.com/MasRama/ren-notes/commit/e8a7349a8d0348543b21d79858d5a8fafad283ed))
+* **app:** Windows caption buttons and a Mica sidebar ([cdab318](https://github.com/MasRama/ren-notes/commit/cdab318410a541125f2120721e851c65692bbbbc))
+* **core:** keep the library in %APPDATA%\Renotes on Windows ([cc424e7](https://github.com/MasRama/ren-notes/commit/cc424e7b06e4d94b850fe7a236e9f62cb3056e02))
+
+
+### Bug Fixes
+
+* **app:** build the Linux window-size store on Linux only ([6b198b3](https://github.com/MasRama/ren-notes/commit/6b198b33c9ceba4362e8a675062dc43ad36cadc8))
+* **app:** ignore reload and print keys, and let AltGr type ([40b6611](https://github.com/MasRama/ren-notes/commit/40b6611b18207c59951f2213a13a6386f74a273f))
+* **app:** size the fitted window by its outside on Windows ([20493e0](https://github.com/MasRama/ren-notes/commit/20493e0316c34ec58770ccd6b75af2e4eb4f69e1))
+* **core:** keep clearing unused attachments when one cannot be removed ([87d70c1](https://github.com/MasRama/ren-notes/commit/87d70c1393385015abd4e7bfb4a49f6dd0eee3f2))
+
 ## [0.3.0](https://github.com/MasRama/ren-notes/compare/v0.2.0...v0.3.0) (2026-11-10)
 
 
