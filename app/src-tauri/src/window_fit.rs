@@ -50,10 +50,11 @@ pub fn fit(window: Rect, area: Rect) -> Option<Rect> {
 pub fn apply(window: &tauri::WebviewWindow) {
     use tauri::{PhysicalPosition, PhysicalSize};
 
-    let (Ok(Some(monitor)), Ok(at), Ok(size)) = (
+    let (Ok(Some(monitor)), Ok(at), Ok(size), Ok(inner)) = (
         window.current_monitor(),
         window.outer_position(),
         window.outer_size(),
+        window.inner_size(),
     ) else {
         return;
     };
@@ -71,7 +72,13 @@ pub fn apply(window: &tauri::WebviewWindow) {
         height: size.height as i32,
     };
     if let Some(to) = fit(now, area) {
-        let _ = window.set_size(PhysicalSize::new(to.width as u32, to.height as u32));
+        // set_size sizes the inside; the outside has the resize border too.
+        let border_w = size.width.saturating_sub(inner.width);
+        let border_h = size.height.saturating_sub(inner.height);
+        let _ = window.set_size(PhysicalSize::new(
+            (to.width as u32).saturating_sub(border_w),
+            (to.height as u32).saturating_sub(border_h),
+        ));
         let _ = window.set_position(PhysicalPosition::new(to.x, to.y));
     }
 }
