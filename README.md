@@ -1,6 +1,7 @@
 # Renotes
 
-A notes app for Linux with the calm, familiar feel of Notes on the Mac.
+A notes app for Linux and Windows with the calm, familiar feel of Notes on
+the Mac.
 Three panes, folders, checklists, tables, pictures and tags, saved as you type
 and reopened exactly where you left off. Everything stays on your computer:
 no account, no cloud, no telemetry.
@@ -46,25 +47,34 @@ no account, no cloud, no telemetry.
 
 ## Install
 
-Download the `.deb` from the
-[latest release](https://github.com/MasRama/ren-notes/releases/latest) and
-install it:
+Downloads are on the
+[latest release](https://github.com/MasRama/ren-notes/releases/latest).
+
+**Linux.** Install the `.deb`:
 
 ```sh
 sudo apt install ./Renotes_*_amd64.deb
 ```
 
 It is built on Ubuntu 24.04 and needs WebKitGTK 4.1, which apt pulls in.
-Renotes is tested on GNOME 46 (Wayland) first.
+Renotes is tested on GNOME 46 (Wayland) first. If you used the first Renotes
+prototype, its notes come over on first start. Its library is only read,
+never changed.
 
-If you used the first Renotes prototype, its notes come over on first start.
-Its library is only read, never changed.
+**Windows 10 and 11.** Run `Renotes_*_x64-setup.exe`. It installs for your
+user only, without admin rights, and fetches Microsoft's WebView2 runtime if
+the PC lacks it. The installer is not code-signed yet, so SmartScreen may
+warn the first time: choose **More info**, then **Run anyway**. On Windows 11
+**Translucent Sidebar** (in the list's view options) shows the desktop
+through Mica.
 
 ## Your data
 
-The library lives in `~/.local/share/ren-notes/` (or under `$XDG_DATA_HOME`):
-one SQLite file plus the attachments and thumbnails. Back up that folder to
-keep everything.
+One SQLite file plus the attachments and thumbnails, in one folder. Back up
+that folder to keep everything.
+
+- Linux: `~/.local/share/ren-notes/` (or under `$XDG_DATA_HOME`)
+- Windows: `%APPDATA%\Renotes\`
 
 ## Build from source
 

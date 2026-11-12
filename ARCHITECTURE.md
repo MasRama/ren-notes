@@ -62,7 +62,7 @@ app/src/shared/      ipc (Tauri client, in-memory API, demo data), ui,
 ## Data
 
 The library lives in `$XDG_DATA_HOME/ren-notes` (by default
-`~/.local/share/ren-notes`): `library.sqlite` in WAL mode with foreign keys
+`~/.local/share/ren-notes`) on Linux and in `%APPDATA%\Renotes` on Windows: `library.sqlite` in WAL mode with foreign keys
 on, `attachments/` and `thumbs/`. Ids are lowercase ULIDs and times are Unix
 milliseconds.
 
@@ -93,3 +93,25 @@ triggers; nothing writes to it directly.
 
 Each feature tests itself against a real database in a temp dir, with a
 `FixedClock` so times are exact (`shared::testing`).
+
+## Platforms
+
+Linux and Windows share every feature; what differs lives behind
+`cfg(target_os)` in the app crate and `shared/platform.ts` in the page.
+
+| | Linux | Windows |
+| --- | --- | --- |
+| Webview | WebKitGTK | WebView2 |
+| Window frame | GTK draws the shadow and resize edges (`frame.rs`); the page rounds the corners | the system's shadow and corners; no page rounding |
+| Window buttons | Mac lights at the top left | caption buttons at the top right (`CaptionButtons.vue`) |
+| Translucent sidebar | the window is transparent | Mica (Windows 11) |
+| Focus dimming | GTK window state | Tauri's `Focused` event |
+| Window size | `window_size.rs` (the plugin grows the window by the GTK shadow) | the window-state plugin |
+| `renotes` protocol | `renotes://localhost/...` | `http://renotes.localhost/...` |
+| Link cards | libsoup | ureq over SChannel |
+| Wallpaper tint | GNOME settings | `SPI_GETDESKWALLPAPER`, or the desktop colour |
+| Package | `.deb` | per-user NSIS installer (`tauri.windows.conf.json`) |
+
+The first prototype's import runs on Linux only; it never ran elsewhere.
+Windows is built and exercised on CI (`.github/workflows/windows.yml` and
+`tools/windows/`), which uploads screenshots of each smoke step.

@@ -2,7 +2,7 @@
   "name": "renotes-app",
   "version": "0.3.0",
   "private": true,
-  "description": "Renotes' page: the three panes and the editor, drawn in WebKitGTK",
+  "description": "Renotes' page: the three panes and the editor, drawn in WebKitGTK or WebView2",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "engines": {
