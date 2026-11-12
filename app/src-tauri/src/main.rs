@@ -9,6 +9,8 @@ mod frame;
 mod link_preview;
 mod protocol;
 mod wallpaper;
+#[cfg(any(not(target_os = "linux"), test))]
+mod window_fit;
 #[cfg(target_os = "linux")]
 mod window_size;
 
@@ -100,6 +102,10 @@ fn main() {
                 if let Some((width, height)) = window_size::restored(saved) {
                     frame::resize(&window, width, height);
                 }
+            }
+            #[cfg(not(target_os = "linux"))]
+            if let Some(window) = app.get_webview_window("main") {
+                window_fit::apply(&window);
             }
             let handle = app.handle().clone();
             std::thread::spawn(move || loop {
