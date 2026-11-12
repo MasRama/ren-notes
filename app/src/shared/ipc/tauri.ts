@@ -1,8 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Api } from "./api";
+import { platform, protocolBase } from "../platform";
 
 /** The real API: Tauri commands named `<feature>_<action>`. */
 export function tauriApi(): Api {
+  const files = protocolBase(platform());
   return {
     foldersList: () => invoke("folders_list"),
     foldersCreate: (name, parentId) => invoke("folders_create", { name, parentId }),
@@ -47,8 +49,8 @@ export function tauriApi(): Api {
       }),
     attachmentsGet: (id) => invoke("attachments_get", { id }),
     attachmentsOpen: (id) => invoke("attachments_open", { id }),
-    attachmentUrl: (id) => `renotes://localhost/attachment/${id}`,
-    thumbUrl: (id) => `renotes://localhost/thumb/${id}`,
+    attachmentUrl: (id) => `${files}/attachment/${id}`,
+    thumbUrl: (id) => `${files}/thumb/${id}`,
 
     sessionGet: (key) => invoke("session_get", { key }),
     sessionSet: (key, value) => invoke("session_set", { key, value }),
