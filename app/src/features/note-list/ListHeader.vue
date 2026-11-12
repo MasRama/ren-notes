@@ -7,7 +7,9 @@ import { deleteNote } from "./actions";
 
 /** The toolbar over the list (or the gallery): what is shown, how many,
  * the view switch, and delete. */
-defineProps<{ chromePad: boolean }>();
+/** `trailing`: the header runs to the window's right edge (the gallery),
+ * where Windows' caption buttons sit. */
+defineProps<{ chromePad: boolean; trailing?: boolean }>();
 const store = useStore();
 const s = store.state;
 
@@ -45,7 +47,7 @@ function remove() {
 </script>
 
 <template>
-  <header class="bar" :class="{ pad: chromePad }" data-tauri-drag-region>
+  <header class="bar" :class="{ pad: chromePad, trailing }" data-tauri-drag-region>
     <div class="title" data-tauri-drag-region @contextmenu.prevent.stop="sortMenu">
       <h1 data-tauri-drag-region>{{ store.title }}</h1>
       <p class="tabular" data-tauri-drag-region>{{ count }}</p>
@@ -79,7 +81,10 @@ function remove() {
   transition: padding-left 250ms var(--ease-out);
 }
 .bar.pad {
-  padding-left: 128px;
+  padding-left: var(--chrome-pad);
+}
+.bar.trailing {
+  padding-right: calc(10px + var(--caption-w));
 }
 .title {
   flex: 1;

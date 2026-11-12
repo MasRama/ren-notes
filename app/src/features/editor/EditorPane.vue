@@ -127,12 +127,12 @@ function table() {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 0 12px;
+  padding: 0 calc(12px + var(--caption-w)) 0 12px;
   border-bottom: 0.5px solid var(--line);
   transition: padding-left 250ms var(--ease-out);
 }
 .bar.pad {
-  padding-left: 128px;
+  padding-left: var(--chrome-pad);
 }
 .middle {
   flex: 1;

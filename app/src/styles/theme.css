@@ -54,10 +54,21 @@
   --scroll: rgba(0, 0, 0, 0.22);
 
   --font: "Inter Variable", "Inter", system-ui, sans-serif;
-  --mono: "JetBrains Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+  --mono: "JetBrains Mono", "DejaVu Sans Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
   --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);
   --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
   --toolbar-h: 52px;
+  /* Room the window's own controls take in the toolbars: the Mac lights and
+     the sidebar button at the left on Linux, Windows' caption buttons at
+     the right (CaptionButtons.vue). */
+  --chrome-pad: 128px;
+  --caption-w: 0px;
+}
+
+/* Windows: no lights at the left, caption buttons at the right. */
+:root.windows {
+  --chrome-pad: 58px;
+  --caption-w: 138px;
 }
 
 @media (prefers-color-scheme: dark) {

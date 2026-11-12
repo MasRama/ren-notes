@@ -6,10 +6,15 @@ import App from "./app/App.vue";
 import { StoreKey } from "./app/context";
 import { Store } from "./app/store";
 import { isTauri, setApi, type Api } from "./shared/ipc/api";
+import { platform } from "./shared/platform";
 
 async function boot() {
   let api: Api;
-  if (isTauri()) document.documentElement.classList.add("framed");
+  const on = platform();
+  document.documentElement.classList.add(on);
+  // On Linux the page draws the window's rounded corners and edge; Windows
+  // draws its own.
+  if (isTauri() && on === "linux") document.documentElement.classList.add("framed");
   // VITE_DEMO=1 shows the demo library in the real window, for screenshots
   // that keep your own notes out of them.
   if (isTauri() && import.meta.env.VITE_DEMO !== "1") {
