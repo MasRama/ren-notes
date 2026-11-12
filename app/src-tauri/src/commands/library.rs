@@ -99,10 +99,9 @@ pub async fn session_set(
 /// nothing (left) to import.
 #[tauri::command]
 pub async fn import_old(state: State<'_, AppState>) -> CmdResult<Option<ImportReport>> {
-    let path = default_old_db_path();
-    if !path.is_file() {
+    let Some(path) = default_old_db_path().filter(|p| p.is_file()) else {
         return Ok(None);
-    }
+    };
     Ok(import_old_renotes(state.lock().db_mut(), &path)?)
 }
 
