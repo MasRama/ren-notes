@@ -57,14 +57,27 @@ powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File "$here/clip-image.p
 Keys '^v'
 Start-Sleep -Seconds 3
 Keys '{ENTER}'
-Set-Clipboard -Value 'https://github.com/MasRama/ren-notes'
+# A page of our own with a card picture: real sites rate-limit runners.
+$site = Join-Path $env:RUNNER_TEMP 'site'
+New-Item -ItemType Directory -Force $site | Out-Null
+Set-Content -Path "$site/index.html" -Value '<html><head><title>Renotes on Windows</title><meta property="og:title" content="A page with a card" /><meta property="og:site_name" content="Smoke Site" /><meta property="og:image" content="/card.png" /></head><body>hi</body></html>'
+Add-Type -AssemblyName System.Drawing
+$card = New-Object System.Drawing.Bitmap 400, 210
+$g = [System.Drawing.Graphics]::FromImage($card)
+$g.Clear([System.Drawing.Color]::FromArgb(46, 160, 110))
+$g.Dispose()
+$card.Save("$site/card.png", [System.Drawing.Imaging.ImageFormat]::Png)
+$server = Start-Process python -ArgumentList '-m', 'http.server', '8765', '--bind', '127.0.0.1', '--directory', $site -PassThru -NoNewWindow
+Start-Sleep -Seconds 2
+Set-Clipboard -Value 'http://127.0.0.1:8765/'
 Keys '^v'
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 6
+Stop-Process -Id $server.Id
 Shot 'picture-and-link'
 
 Expect 'the note was saved' "select count(*) from notes where title = 'Hello from Windows' and deleted_at is null" '1'
 Expect 'its tag was read' "select count(*) from note_tags where tag = 'windows'" '1'
-Expect 'the picture was kept' "select count(*) from attachments where mime like 'image/%'" '2'
+Expect 'the picture and the card picture were kept' "select count(*) from attachments where mime like 'image/%'" '2'
 
 & "$here/window.ps1" -State Maximize
 Shot 'maximized'
