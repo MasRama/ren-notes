@@ -143,8 +143,7 @@ fn main() {
 
 /// The old prototype's notes come over once; then the usual housekeeping.
 fn first_start(library: &mut Library) {
-    let old = import::default_old_db_path();
-    if old.is_file() {
+    if let Some(old) = import::default_old_db_path().filter(|p| p.is_file()) {
         if let Err(e) = import::import_old_renotes(library.db_mut(), &old) {
             eprintln!("renotes: importing {} failed: {e}", old.display());
         }

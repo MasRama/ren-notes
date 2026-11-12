@@ -19,10 +19,15 @@ pub struct ImportReport {
     pub notes: usize,
 }
 
-pub fn default_old_db_path() -> PathBuf {
+/// Where the first prototype kept its library. It only ever ran on Linux, so
+/// elsewhere there is nothing to import.
+pub fn default_old_db_path() -> Option<PathBuf> {
+    if !cfg!(target_os = "linux") {
+        return None;
+    }
     let xdg = std::env::var("XDG_DATA_HOME").ok();
     let home = std::env::var("HOME").unwrap_or_default();
-    default_old_db_path_from(xdg.as_deref(), &home)
+    Some(default_old_db_path_from(xdg.as_deref(), &home))
 }
 
 pub fn default_old_db_path_from(xdg_data_home: Option<&str>, home: &str) -> PathBuf {
