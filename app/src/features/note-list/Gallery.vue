@@ -49,7 +49,7 @@ function dragStart(e: DragEvent, note: NoteSummary) {
 
 <template>
   <section class="gallery" :class="{ focused }">
-    <ListHeader :chrome-pad="chromePad" />
+    <ListHeader :chrome-pad="chromePad" trailing />
     <div v-if="store.inTrash && s.notes.length" class="trash-banner">
       Notes are kept here for 30 days, then deleted for good.
       <button class="link" @click="emptyTrash(store)">Delete All</button>

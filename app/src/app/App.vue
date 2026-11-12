@@ -5,6 +5,7 @@ import { appWindow } from "./window";
 import { applyTint } from "./tint";
 import { api } from "../shared/ipc/api";
 import WindowControls from "./WindowControls.vue";
+import CaptionButtons from "./CaptionButtons.vue";
 import Splitter from "./Splitter.vue";
 import Icon from "../shared/ui/Icon.vue";
 import ContextMenu from "../shared/ui/ContextMenu.vue";
@@ -17,6 +18,7 @@ import Gallery from "../features/note-list/Gallery.vue";
 import EditorPane from "../features/editor/EditorPane.vue";
 import SmartFolderDialog from "../features/smart-folders/SmartFolderDialog.vue";
 import { browserKey, inDialog, shortcut } from "../shared/keyboard";
+import { platform } from "../shared/platform";
 
 const store = useStore();
 const s = store.state;
@@ -24,11 +26,13 @@ const s = store.state;
 const windowActive = ref(true);
 const maximized = ref(false);
 const framed = document.documentElement.classList.contains("framed");
+const onWindows = platform() === "windows";
 
 const showList = computed(() => s.view === "list");
 // With the sidebar hidden the window controls sit over the list, so the list
-// grows by their width and keeps the room it had for its own title.
-const CHROME_W = 110;
+// grows by their width and keeps the room it had for its own title. On
+// Windows only the sidebar button is there (--chrome-pad in theme.css).
+const CHROME_W = onWindows ? 40 : 110;
 const listExtra = computed(() => (s.sidebarShown ? 0 : CHROME_W));
 const showEditor = computed(() => s.view === "list" || s.galleryOpen);
 
@@ -98,6 +102,21 @@ function refreshTint() {
     .catch(() => applyTint(document.documentElement, null));
 }
 
+// Windows: the desktop shows through the sidebar as Mica, in the page's own
+// light or dark. Windows 10 has no Mica and keeps the plain glass colour.
+async function windowsBackdrop(translucent: boolean, theme: typeof s.theme) {
+  const win = await appWindow();
+  if (!win) return;
+  await win.setTheme(theme === "system" ? null : theme).catch(() => {});
+  if (translucent) {
+    const { Effect } = await import("@tauri-apps/api/window");
+    await win.setEffects({ effects: [Effect.Mica] }).catch(() => {});
+  } else {
+    await win.clearEffects().catch(() => {});
+  }
+}
+if (onWindows) watchEffect(() => void windowsBackdrop(s.translucentSidebar, s.theme));
+
 onMounted(async () => {
   window.addEventListener("keydown", onKey);
   unlisten.push(closeWhenIdle(store, window));
@@ -135,7 +154,7 @@ onBeforeUnmount(() => {
     @contextmenu.prevent
   >
     <div class="chrome">
-      <WindowControls :active="windowActive" />
+      <WindowControls v-if="!onWindows" :active="windowActive" />
       <button class="tool" :class="{ on: s.sidebarShown }" title="Show or hide the sidebar (Ctrl+Alt+S)" @click="toggleSidebar">
         <Icon name="sidebar" />
       </button>
@@ -170,6 +189,7 @@ onBeforeUnmount(() => {
       <Gallery v-else key="gallery" class="panes" :chrome-pad="!s.sidebarShown" />
     </Transition>
 
+    <CaptionButtons v-if="onWindows" :active="windowActive" :maximized="maximized" />
     <ContextMenu />
     <AlertDialog />
     <PasswordSheet />
