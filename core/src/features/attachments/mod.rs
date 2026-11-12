@@ -123,6 +123,9 @@ pub fn thumb_path(root: &Path, id: &str) -> PathBuf {
 
 /// Removes attachments no note uses any more (deleted notes included), once
 /// they are older than the grace period. Returns how many.
+///
+/// A file that cannot be removed (on Windows, one another app still has open)
+/// keeps its record, so the next run tries again; the rest go on.
 pub fn collect_garbage(root: &Path, db: &mut Db) -> Result<usize> {
     let cutoff = db.now() - GRACE_MS;
     let unused: Vec<(String, String)> = db
@@ -133,14 +136,18 @@ pub fn collect_garbage(root: &Path, db: &mut Db) -> Result<usize> {
         )?
         .query_map([cutoff], |r| Ok((r.get(0)?, r.get(1)?)))?
         .collect::<std::result::Result<_, _>>()?;
+    let mut removed = 0;
     for (id, file_name) in &unused {
         let ext = extension(file_name);
-        remove_if_present(&root.join("attachments").join(stored_name(id, &ext)))?;
-        remove_if_present(&thumb_path(root, id))?;
+        let file = root.join("attachments").join(stored_name(id, &ext));
+        if remove_if_present(&file).is_err() || remove_if_present(&thumb_path(root, id)).is_err() {
+            continue;
+        }
         db.conn()
             .execute("DELETE FROM attachments WHERE id = ?1", [id])?;
+        removed += 1;
     }
-    Ok(unused.len())
+    Ok(removed)
 }
 
 fn remove_if_present(path: &Path) -> Result<()> {
@@ -320,5 +327,27 @@ mod tests {
             .exists());
         assert!(file_path(&root, &t.db, &used.id).is_ok());
         assert!(file_path(&root, &t.db, &fresh.id).is_ok());
+    }
+
+    #[test]
+    fn garbage_that_cannot_be_removed_waits_for_the_next_run() {
+        let mut t = temp_db();
+        let root = root(&t);
+        let stuck = add(&root, &mut t.db, b"open elsewhere", "a.txt").unwrap();
+        let loose = add(&root, &mut t.db, b"loose", "b.txt").unwrap();
+        // A folder in the file's place cannot be removed as a file, as a
+        // file another app has open cannot on Windows.
+        let stuck_file = file_path(&root, &t.db, &stuck.id).unwrap();
+        std::fs::remove_file(&stuck_file).unwrap();
+        std::fs::create_dir_all(stuck_file.join("inside")).unwrap();
+        t.clock.advance(GRACE_MS + 1);
+
+        assert_eq!(collect_garbage(&root, &mut t.db).unwrap(), 1);
+        assert!(file_path(&root, &t.db, &loose.id).is_err());
+        assert!(file_path(&root, &t.db, &stuck.id).is_ok());
+
+        std::fs::remove_dir_all(&stuck_file).unwrap();
+        assert_eq!(collect_garbage(&root, &mut t.db).unwrap(), 1);
+        assert!(file_path(&root, &t.db, &stuck.id).is_err());
     }
 }
