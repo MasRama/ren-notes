@@ -9,12 +9,15 @@ mod frame;
 mod link_preview;
 mod protocol;
 mod wallpaper;
+#[cfg(target_os = "linux")]
 mod window_size;
 
 use std::time::Duration;
 
 use renotes_core::app::Library;
-use renotes_core::features::{attachments, import, session, trash};
+#[cfg(target_os = "linux")]
+use renotes_core::features::session;
+use renotes_core::features::{attachments, import, trash};
 use renotes_core::shared::paths::data_dir;
 use tauri::http::{Response, StatusCode};
 #[cfg(not(target_os = "linux"))]
